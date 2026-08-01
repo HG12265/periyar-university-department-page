@@ -76,11 +76,13 @@ export default function ProgrammesBuilder() {
           const name = tds[0].textContent.trim();
           const eligibilityHtml = tds[1].innerHTML.trim();
           
-          // Skip header row if it contains header keywords
+          // Skip header row strictly if it is th or matches exact header title
+          const cleanName = name.toLowerCase().trim();
+          const cleanEligibility = eligibilityHtml.toLowerCase().trim();
           const isHeader = 
-            name.toLowerCase().includes('programmes offered') || 
-            name.toLowerCase().includes('programme') ||
-            eligibilityHtml.toLowerCase().includes('eligibility');
+            tr.querySelector('th') !== null ||
+            cleanName === 'programmes offered' || 
+            (cleanName.includes('programmes offered') && cleanEligibility.includes('eligibility'));
             
           if (!isHeader && name) {
             rows.push({
