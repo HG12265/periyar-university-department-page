@@ -1,0 +1,93 @@
+services:
+  database:
+    image: mysql:8.0
+    container_name: periyar_database
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    # database port is not exposed to the host in production for security.
+    # ports:
+    #   - "127.0.0.1:3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${DB_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - periyar_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: periyar_backend
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://root:${DB_PASSWORD}@database/${DB_NAME}?charset=utf8mb4
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=database
+      - DB_NAME=${DB_NAME}
+      - PORT=5000
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - RESUME_DB_USER=${RESUME_DB_USER}
+      - RESUME_DB_PASSWORD=${RESUME_DB_PASSWORD}
+      - RESUME_DB_HOST=${RESUME_DB_HOST}
+      - RESUME_DB_PORT=${RESUME_DB_PORT}
+      - RESUME_DB_NAME=${RESUME_DB_NAME}
+    volumes:
+      - ./backend/uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - periyar_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: periyar_frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=/api
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - periyar_network
+
+volumes:
+  mysql_data:
+
+networks:
+  periyar_network:
+    driver: bridge

@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const facultyController_1 = require("../controllers/facultyController");
+const validator_1 = require("../middleware/validator");
+const auth_1 = require("../middleware/auth");
+const csrf_1 = require("../middleware/csrf");
+const schemas_1 = require("../validators/schemas");
+const audit_1 = require("../middleware/audit");
+const router = (0, express_1.Router)();
+router.post('/admin/faculties', auth_1.getCurrentUser, (0, auth_1.requireRole)('dept_admin'), csrf_1.verifyCsrf, (0, validator_1.validateBody)(schemas_1.facultyCreateSchema), (0, audit_1.auditAction)('ADD_FACULTY', 'FACULTIES_TABLE'), facultyController_1.FacultyController.addFaculty);
+router.put('/admin/faculties/:id', auth_1.getCurrentUser, (0, auth_1.requireRole)('dept_admin'), csrf_1.verifyCsrf, (0, validator_1.validateBody)(schemas_1.facultyUpdateSchema), (0, audit_1.auditAction)('UPDATE_FACULTY', 'FACULTIES_TABLE'), facultyController_1.FacultyController.updateFaculty);
+router.post('/admin/remove-faculty/:id', auth_1.getCurrentUser, (0, auth_1.requireRole)('dept_admin'), csrf_1.verifyCsrf, (0, audit_1.auditAction)('DELETE_FACULTY', 'FACULTIES_TABLE'), facultyController_1.FacultyController.deleteFaculty);
+router.get('/admin/faculties-all', auth_1.getCurrentUser, (0, auth_1.requireRole)('dept_admin'), facultyController_1.FacultyController.getAllFaculties);
+exports.default = router;

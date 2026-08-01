@@ -1,0 +1,648 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-tamil: 'myFirstFont', "Latha", "Arial Unicode MS", "sans-serif";
+  --font-cmu: 'CMU Sans Serif Demi borderless', "Arial", "Helvetica", "sans-serif";
+}
+
+@font-face {
+  font-family: 'CMU Sans Serif Demi borderless';
+  src: url('/fonts/cmunss.ttf') format('truetype');
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateY(100%);
+  }
+
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+  font-size: 16px !important;
+  background-color: #ffffff;
+}
+
+h1,
+h2,
+h3,
+.main-header {
+  font-family: 'CMU Sans Serif Demi borderless', Arial, Helvetica, sans-serif !important;
+  font-size: 24px !important;
+}
+
+th,
+thead th {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+}
+
+/* Hide scrollbar utility class */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Base custom classes to match original site precisely */
+.text-shadow-sm {
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Fix for bullet points and lists in prose content */
+.prose ul,
+.syllabus-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.prose ol,
+.syllabus-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.prose li,
+.syllabus-content li {
+  margin-bottom: 0.5rem;
+}
+
+/* Programmes page table styling */
+.programmes-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  table-layout: fixed;
+  border: 1px solid #ddd;
+}
+
+.programmes-content th,
+.programmes-content td {
+  border: none;
+  border-bottom: 1px solid #eee;
+  padding: 1rem;
+  vertical-align: top;
+  text-align: left;
+}
+
+.programmes-content th {
+  border-bottom: 2px solid #ddd;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  font-size: 16px;
+}
+
+.programmes-content td {
+  color: #555;
+  font-size: 16px;
+  line-height: 1.6;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.programmes-content td:first-child,
+.programmes-content th:first-child {
+  width: 35%;
+  color: #444;
+  font-weight: 600;
+}
+
+.programmes-content a {
+  color: #c70440;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.programmes-content a:hover {
+  text-decoration: underline;
+}
+
+/* Fix for Quill Editor table wrapping and display */
+.ql-editor table {
+  table-layout: fixed !important;
+  width: 100% !important;
+  border: 1px solid #ddd !important;
+}
+
+.ql-editor td {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  overflow-wrap: anywhere !important;
+  border-bottom: 1px solid #eee !important;
+}
+
+/* Override quill default border on single merged cells if any */
+.ql-editor td[colspan="2"] {
+  font-weight: bold !important;
+  text-transform: uppercase;
+}
+
+/* Syllabus page table styling */
+.syllabus-content {
+  width: 100%;
+}
+
+.syllabus-content table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  margin-top: 20px;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+@media (min-width: 601px) {
+  .syllabus-content th:nth-child(1),
+  .syllabus-content td:nth-child(1) {
+    width: 15% !important;
+  }
+
+  .syllabus-content th:nth-child(2),
+  .syllabus-content td:nth-child(2) {
+    width: 65% !important;
+  }
+
+  .syllabus-content th:nth-child(3),
+  .syllabus-content td:nth-child(3) {
+    width: 20% !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .syllabus-content table {
+    table-layout: auto !important;
+  }
+  .syllabus-content th,
+  .syllabus-content td {
+    padding: 10px 8px !important;
+    font-size: 14px !important;
+  }
+  .syllabus-content th:nth-child(1),
+  .syllabus-content td:nth-child(1) {
+    width: 50px !important;
+    white-space: nowrap !important;
+  }
+  .syllabus-content th:nth-child(3),
+  .syllabus-content td:nth-child(3) {
+    width: 90px !important;
+    white-space: nowrap !important;
+  }
+}
+
+.syllabus-content th,
+.syllabus-content td {
+  padding: 15px 12px !important;
+  text-align: left;
+  border: none !important;
+  word-wrap: break-word;
+}
+
+.syllabus-content thead tr {
+  border-bottom: 2px solid #eee !important;
+  background-color: #fff !important;
+}
+
+.syllabus-content thead th {
+  color: #333 !important;
+  font-weight: bold !important;
+  text-transform: uppercase;
+  background-color: transparent !important;
+}
+
+.syllabus-content tbody tr {
+  border-bottom: 1px solid #eee !important;
+}
+
+/* Force the entire row to have the teal background if it contains the teal color */
+.syllabus-content tbody tr:has([style*="1fa2b8"]),
+.syllabus-content tbody tr:has([style*="31, 162, 184"]) {
+  background-color: #1fa2b8 !important;
+  border-bottom: none !important;
+}
+
+/* Force the td to be transparent so the tr color shows, or force td to teal */
+.syllabus-content tbody tr:has([style*="1fa2b8"]) td,
+.syllabus-content tbody tr:has([style*="31, 162, 184"]) td {
+  background-color: #1fa2b8 !important;
+  border: none !important;
+}
+
+/* Center the text in the middle column for the year row */
+.syllabus-content tbody tr:has([style*="1fa2b8"]) td:nth-child(2),
+.syllabus-content tbody tr:has([style*="31, 162, 184"]) td:nth-child(2),
+.syllabus-content tbody tr:has([style*="1fa2b8"]) td:nth-child(2) *,
+.syllabus-content tbody tr:has([style*="31, 162, 184"]) td:nth-child(2) * {
+  text-align: center !important;
+  color: #333 !important;
+  font-weight: bold !important;
+}
+
+.syllabus-content tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.syllabus-content a {
+  color: #cc0000 !important;
+  text-decoration: none !important;
+  font-weight: normal !important;
+}
+
+.syllabus-content a:hover {
+  text-decoration: underline !important;
+}
+
+/* Premium dynamic syllabus dual action buttons styling */
+.syllabus-content .syllabus-actions-wrapper,
+.syllabus-actions-wrapper {
+  display: flex !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+.syllabus-content .syllabus-action-btn,
+.syllabus-action-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 10px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  padding: 0 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* View (Eye) Button Style */
+.syllabus-content .syllabus-action-btn.view,
+.syllabus-action-btn.view {
+  background-color: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1.5px solid #a7f3d0 !important;
+}
+
+.syllabus-content .syllabus-action-btn.view:hover,
+.syllabus-action-btn.view:hover {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  border-color: #047857 !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 12px rgba(5, 150, 105, 0.2) !important;
+  text-decoration: none !important;
+}
+
+/* Download Button Style */
+.syllabus-content .syllabus-action-btn.download,
+.syllabus-action-btn.download {
+  background-color: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border: 1.5px solid #bfdbfe !important;
+}
+
+.syllabus-content .syllabus-action-btn.download:hover,
+.syllabus-action-btn.download:hover {
+  background-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  border-color: #1e40af !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 12px rgba(29, 78, 216, 0.2) !important;
+  text-decoration: none !important;
+}
+
+/* SVG Icon Inside */
+.syllabus-content .syllabus-action-btn svg,
+.syllabus-action-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke-width: 2.5 !important;
+  transition: transform 0.2s ease !important;
+}
+
+.syllabus-content .syllabus-action-btn:hover svg,
+.syllabus-action-btn:hover svg {
+  transform: scale(1.15) !important;
+}
+
+.syllabus-content p,
+.syllabus-content span,
+.syllabus-content strong,
+.syllabus-content em {
+  color: #1f2937;
+}
+
+/* Projects page table styling */
+.projects-content {
+  width: 100%;
+}
+
+.projects-content table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  margin-top: 20px;
+  border: 1px solid #dee2e6 !important;
+  border-radius: 0 !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
+}
+
+.projects-content th,
+.projects-content td {
+  padding: 15px 12px !important;
+  text-align: left;
+  border: 1px solid #dee2e6 !important;
+  word-wrap: break-word !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.projects-content thead tr {
+  border-bottom: 2px solid #990033 !important;
+  background-color: #f8f9fa !important;
+}
+
+.projects-content thead th {
+  color: #333 !important;
+  font-weight: bold !important;
+  text-transform: uppercase;
+  background-color: transparent !important;
+}
+
+.projects-content tbody tr,
+.projects-content table:not(:has(thead)) tr:not(:first-child) {
+  border-bottom: 1px solid #dee2e6 !important;
+}
+
+.projects-content tbody tr:nth-child(even),
+.projects-content table:not(:has(thead)) tr:not(:first-child):nth-child(even) {
+  background-color: #f9fafb !important;
+}
+
+.projects-content tbody tr:last-child,
+.projects-content table:not(:has(thead)) tr:last-child {
+  border-bottom: 1px solid #dee2e6 !important;
+}
+
+.projects-content a {
+  color: #cc0000 !important;
+  text-decoration: none !important;
+  font-weight: normal !important;
+}
+
+.projects-content a:hover {
+  text-decoration: underline !important;
+}
+
+/* UGC-MRP page table styling */
+.ugc-mrp-content {
+  width: 100%;
+}
+
+.ugc-mrp-content table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  margin-top: 20px;
+  border: 1px solid #dee2e6 !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
+}
+
+.ugc-mrp-content th,
+.ugc-mrp-content td {
+  padding: 15px 12px !important;
+  text-align: left;
+  border: 1px solid #dee2e6 !important;
+  word-wrap: break-word !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+@media (min-width: 601px) {
+  .ugc-mrp-content td:nth-child(1) {
+    width: 80% !important; /* Column 1: Project Details */
+  }
+
+  .ugc-mrp-content td:nth-child(2) {
+    width: 20% !important; /* Column 2: Download */
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .ugc-mrp-content table {
+    table-layout: auto !important;
+  }
+  .ugc-mrp-content th,
+  .ugc-mrp-content td {
+    padding: 10px 8px !important;
+    font-size: 14.5px !important;
+  }
+  .ugc-mrp-content td:nth-child(1) {
+    width: auto !important;
+  }
+  .ugc-mrp-content td:nth-child(2) {
+    width: 110px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+  }
+}
+
+.ugc-mrp-content tbody tr {
+  border-bottom: 1px solid #dee2e6 !important;
+}
+
+.ugc-mrp-content tbody tr:nth-child(even) {
+  background-color: #f9fafb !important;
+}
+
+.ugc-mrp-content a {
+  color: #cc0000 !important;
+  text-decoration: none !important;
+  font-weight: bold !important;
+}
+
+.ugc-mrp-content a:hover {
+  text-decoration: underline !important;
+}
+
+/* Force syllabus blue style on UGC-MRP table header with full fill */
+.ugc-mrp-content thead tr,
+.ugc-mrp-content tr:first-child:has(th),
+.ugc-mrp-content tr:first-child:has(td[colspan]) {
+  background-color: #1fa2b8 !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.ugc-mrp-content thead th,
+.ugc-mrp-content tr:first-child th,
+.ugc-mrp-content tr:first-child td[colspan] {
+  background-color: #1fa2b8 !important;
+  color: #ffffff !important;
+  font-weight: bold !important;
+  text-align: center !important;
+  border: none !important;
+  text-transform: uppercase;
+}
+
+/* Professional University Typography: Safe Block Justification */
+.prose p,
+.prose li {
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+/* ==========================================
+   📖 PREMIUM 3D FLIPBOOK VIEWING OVERLAY
+   ========================================== */
+
+/* Hardware accelerated Perspective Arena */
+.book-3d {
+  position: relative;
+  perspective: 1600px;
+  transform-style: preserve-3d;
+  margin: auto;
+  box-shadow: 0 35px 80px rgba(0, 0, 0, 0.6);
+  border-radius: 16px;
+  background-color: #0b1329;
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+/* Open Book Central Spinal Binding Shadow */
+.book-spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 32px;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.25) 25%,
+    rgba(0, 0, 0, 0.45) 50%,
+    rgba(0, 0, 0, 0.25) 75%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  pointer-events: none;
+}
+
+/* Individual Book Sheet Page Boundary */
+.book-page {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  background-color: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Left Book Page static background */
+.book-page.static-left {
+  left: 0;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: inset -25px 0 40px rgba(0, 0, 0, 0.08), -5px 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Right Book Page static background */
+.book-page.static-right {
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
+  border-left: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: inset 25px 0 40px rgba(0, 0, 0, 0.08), 5px 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Single-Page Cover (Page 1) — full rounded book */
+.book-page.static-cover {
+  left: 0;
+  border-radius: 16px;
+  box-shadow:
+    4px 4px 12px rgba(0, 0, 0, 0.35),
+    -2px 0 8px rgba(0, 0, 0, 0.15),
+    inset -12px 0 32px rgba(0, 0, 0, 0.06);
+}
+
+/* Dynamic Turning Sheet (Flipping Page) */
+.book-page.flipping-sheet {
+  z-index: 5;
+  transform-style: preserve-3d;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+/* Front & Back Faces of the flipping sheet */
+.book-page.flipping-sheet .page-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  backface-visibility: hidden;
+  background-color: #ffffff;
+}
+
+.book-page.flipping-sheet .face-front {
+  z-index: 2;
+  transform: rotateY(0deg);
+  border-radius: 16px;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.05);
+}
+
+.book-page.flipping-sheet .face-back {
+  transform: rotateY(180deg);
+  border-radius: 16px;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Forward Page Turn Animation (Right to Left folding) */
+.book-page.flipping-sheet.flip-next {
+  animation: flipNextSheetAnimation 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+}
+
+@keyframes flipNextSheetAnimation {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(-180deg);
+  }
+}
+
+/* Backward Page Turn Animation (Left to Right folding) */
+.book-page.flipping-sheet.flip-prev {
+  animation: flipPrevSheetAnimation 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+}
+
+@keyframes flipPrevSheetAnimation {
+  0% {
+    transform: rotateY(-180deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
