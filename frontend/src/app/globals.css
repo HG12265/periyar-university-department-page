@@ -412,6 +412,32 @@ thead th {
   text-decoration: underline !important;
 }
 
+/* Mobile responsive horizontal scroll for Projects table */
+@media (max-width: 768px) {
+  .projects-content {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+  }
+
+  .projects-content table {
+    table-layout: auto !important;
+    min-width: 650px !important;
+    width: 100% !important;
+  }
+
+  .projects-content th,
+  .projects-content td {
+    padding: 12px 10px !important;
+    font-size: 13.5px !important;
+    word-wrap: normal !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+  }
+}
+
 /* UGC-MRP page table styling */
 .ugc-mrp-content {
   width: 100%;
