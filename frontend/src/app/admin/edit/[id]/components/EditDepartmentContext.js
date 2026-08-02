@@ -729,31 +729,65 @@ export function EditDepartmentProvider({ children }) {
     return c;
   });
 
-  const toggleModuleSection = (slug, name) => {
+  const toggleModuleSection = async (slug, name) => {
     if (!dept) return;
     const currentNavLinks = dept.nav_links ? [...dept.nav_links] : [];
-    const exists = currentNavLinks.some(l => l.url === `#${slug}` || l.slug === slug || l.url === slug);
+    const targetLink = currentNavLinks.find(l => l.url === `#${slug}` || l.slug === slug || l.url === slug);
 
     let updatedNavLinks = [];
-    if (exists) {
+    if (targetLink) {
       // Toggle OFF: remove this link
       updatedNavLinks = currentNavLinks.filter(l => l.url !== `#${slug}` && l.slug !== slug && l.url !== slug);
+      setDept(prev => ({ ...prev, nav_links: updatedNavLinks }));
+
+      // Delete from DB
+      if (targetLink.id && typeof targetLink.id === 'number') {
+        try {
+          await fetch(`${apiUrl}/admin/remove-link/${targetLink.id}`, { method: 'POST' });
+        } catch (err) { console.error('Failed to delete nav link', err); }
+      }
     } else {
       // Toggle ON: add this link
+      const newOrderIndex = currentNavLinks.length + 1;
+      const url = `#${slug}`;
+      const tempId = `temp-${Date.now()}`;
+
       const newLink = {
-        id: `temp-${Date.now()}`,
+        id: tempId,
         label: name,
-        url: `#${slug}`,
-        order_index: currentNavLinks.length + 1,
+        url: url,
+        order_index: newOrderIndex,
         slug: slug
       };
-      updatedNavLinks = [...currentNavLinks, newLink];
-    }
 
-    setDept(prev => ({
-      ...prev,
-      nav_links: updatedNavLinks
-    }));
+      updatedNavLinks = [...currentNavLinks, newLink];
+      setDept(prev => ({ ...prev, nav_links: updatedNavLinks }));
+
+      // Insert into DB
+      try {
+        const res = await fetch(`${apiUrl}/admin/nav-links`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dept_id: dept.id,
+            label: name,
+            url: url,
+            order_index: newOrderIndex
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.id) {
+            setDept(prev => ({
+              ...prev,
+              nav_links: (prev.nav_links || []).map(l => l.id === tempId ? { ...l, id: data.id } : l)
+            }));
+          }
+        }
+      } catch (err) {
+        console.error('Failed to persist nav link', err);
+      }
+    }
   };
 
   const fetchActivityGallery = async () => {

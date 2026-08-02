@@ -234,6 +234,16 @@ export default function DeptPage() {
     navbarLinks.push({ label: 'Placement', url: '#placement', slug: 'placement' });
   }
 
+  // Auto-inject Placement tab if department has saved placement table data
+  if (dept.placement_table && (dept.placement_table.rows?.length > 0 || dept.placement_table.meeting_title) && !navbarLinks.some(l => l.slug === 'placement')) {
+    navbarLinks.push({ label: 'Placement', url: '#placement', slug: 'placement' });
+  }
+
+  // Auto-inject Alumni tab if department has saved alumni table data
+  if (dept.alumni_table && (dept.alumni_table.rows?.length > 0 || dept.alumni_table.meeting_title) && !navbarLinks.some(l => l.slug === 'alumni')) {
+    navbarLinks.push({ label: 'Alumni', url: '#alumni', slug: 'alumni' });
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-white font-sans">
       <Topbar />
