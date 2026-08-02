@@ -2,12 +2,34 @@ import "./globals.css";
 import FetchInterceptor from "@/components/FetchInterceptor";
 
 export const metadata = {
-  title: "Periyar University | Salem",
-  description: "Official Website Clone of Periyar University, Salem",
+  title: "Periyar University, Salem",
+  description: "Schools and Departments",
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
     apple: "/logo.png",
+  },
+  openGraph: {
+    title: "Periyar University, Salem",
+    description: "Schools and Departments",
+    url: "https://periyaruniversity.site",
+    siteName: "Periyar University, Salem",
+    images: [
+      {
+        url: "https://periyaruniversity.site/logo.png",
+        width: 800,
+        height: 800,
+        alt: "Periyar University Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Periyar University, Salem",
+    description: "Schools and Departments",
+    images: ["https://periyaruniversity.site/logo.png"],
   },
 };
 
