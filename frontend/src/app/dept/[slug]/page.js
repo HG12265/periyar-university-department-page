@@ -229,27 +229,9 @@ export default function DeptPage() {
     return l;
   });
 
-  // Filter out tabs that should not be visible for other departments
-  navbarLinks = navbarLinks.filter(l => {
-    if (l.slug === 'placement' && !isEnergyScience) return false;
-    if (l.slug === 'guest-faculty' && !(isEnergyScience || isFoodScience || isTextiles)) return false;
-    return true;
-  });
-
-  // Dynamically inject critical tabs if they should be here but are missing
+  // Ensure default fallback for Energy Science if not explicitly set
   if (isEnergyScience && !navbarLinks.some(l => l.slug === 'placement')) {
     navbarLinks.push({ label: 'Placement', url: '#placement', slug: 'placement' });
-  }
-
-  if (isEnergyScience || isFoodScience || isTextiles) {
-    if (!navbarLinks.some(l => l.slug === 'guest-faculty')) {
-      const facultyIdx = navbarLinks.findIndex(l => l.slug === 'faculty');
-      if (facultyIdx !== -1) {
-        navbarLinks.splice(facultyIdx + 1, 0, { label: 'Guest Faculty', url: '#guest-faculty', slug: 'guest-faculty' });
-      } else {
-        navbarLinks.push({ label: 'Guest Faculty', url: '#guest-faculty', slug: 'guest-faculty' });
-      }
-    }
   }
 
   return (

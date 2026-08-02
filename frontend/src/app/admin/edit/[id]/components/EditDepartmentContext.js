@@ -721,11 +721,6 @@ export function EditDepartmentProvider({ children }) {
     })
     : defaultCategories;
 
-  // Enforce critical management tabs are dynamically added ONLY to their designated departments
-  const isEnergyScience = dept?.slug === 'energy-science-and-technology';
-  const isFoodScience = dept?.slug === 'food-science-and-nutrition';
-  const isTextiles = dept?.slug === 'textiles-and-apparel-design';
-
   // Normalize guestfaculty slug to guest-faculty for uniform handling and duplicate prevention
   categories = categories.map(c => {
     if (c.slug === 'guestfaculty') {
@@ -734,31 +729,32 @@ export function EditDepartmentProvider({ children }) {
     return c;
   });
 
-  // 1. Filter out Placement and Guest Faculty if they shouldn't be here (e.g. from defaultCategories or nav_links)
-  categories = categories.filter(c => {
-    if (c.slug === 'placement' && !isEnergyScience) return false;
-    if (c.slug === 'guest-faculty' && !(isEnergyScience || isFoodScience || isTextiles)) return false;
-    return true;
-  });
+  const toggleModuleSection = (slug, name) => {
+    if (!dept) return;
+    const currentNavLinks = dept.nav_links ? [...dept.nav_links] : [];
+    const exists = currentNavLinks.some(l => l.url === `#${slug}` || l.slug === slug || l.url === slug);
 
-  // 2. Add them if they should be here but are missing (e.g. from custom nav_links)
-  if (isEnergyScience && !categories.some(c => c.slug === 'placement')) {
-    categories.push({
-      name: 'Placement',
-      slug: 'placement',
-      icon: getCategoryIcon('placement', 'Placement')
-    });
-  }
-
-  if (isEnergyScience || isFoodScience || isTextiles) {
-    if (!categories.some(c => c.slug === 'guest-faculty')) {
-      categories.push({
-        name: 'Guest Faculty',
-        slug: 'guest-faculty',
-        icon: getCategoryIcon('guest-faculty', 'Guest Faculty')
-      });
+    let updatedNavLinks = [];
+    if (exists) {
+      // Toggle OFF: remove this link
+      updatedNavLinks = currentNavLinks.filter(l => l.url !== `#${slug}` && l.slug !== slug && l.url !== slug);
+    } else {
+      // Toggle ON: add this link
+      const newLink = {
+        id: `temp-${Date.now()}`,
+        label: name,
+        url: `#${slug}`,
+        order_index: currentNavLinks.length + 1,
+        slug: slug
+      };
+      updatedNavLinks = [...currentNavLinks, newLink];
     }
-  }
+
+    setDept(prev => ({
+      ...prev,
+      nav_links: updatedNavLinks
+    }));
+  };
 
   const fetchActivityGallery = async () => {
     try {
@@ -2545,7 +2541,7 @@ export function EditDepartmentProvider({ children }) {
       fetchPlacementTable, handleSavePlacementTable, handleSaveSinglePlacement, handleSaveSinglePlacementEvent,
       handleSaveFaculty, deleteFaculty, handleSaveVisitingFacultyTable, handleSavePhdAwardedTable,
       saveDstFacultyRowsDirectly, saveMuseumContentDirectly, saveBestPracticesContentDirectly, saveFinanceDetailsContentDirectly, handleMuseumImageUpload, getImageUrl,
-      getItemCountText, getDeptIcon,
+      getItemCountText, getDeptIcon, toggleModuleSection,
       handleUpdateBannerImage, handleRemoveBannerImage,
       globalConfirm, showConfirm, globalPrompt, showPrompt
     }}>
