@@ -168,6 +168,21 @@ export default function DeptPage() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [dept]);
 
+  // Auto-scroll page to top of department navbar when activeTab changes
+  useEffect(() => {
+    if (!loading && activeTab) {
+      const navbarElement = document.getElementById('dept-sub-navbar');
+      if (navbarElement) {
+        const elementRect = navbarElement.getBoundingClientRect();
+        const absoluteElementTop = elementRect.top + window.pageYOffset;
+        window.scrollTo({
+          top: Math.max(0, absoluteElementTop - 10),
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [activeTab, loading]);
+
   const syllabusSections = dept?.sections?.filter(section => section.category === 'syllabus') || [];
   const isSyllabusTab = activeTab === 'syllabus';
   const isProgrammesTab = activeTab === 'programmes';
