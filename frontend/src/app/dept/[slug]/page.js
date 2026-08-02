@@ -168,15 +168,15 @@ export default function DeptPage() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [dept]);
 
-  // Auto-scroll page to top of department navbar when activeTab changes
+  // Auto-scroll page to top of department navbar wrapper when activeTab changes
   useEffect(() => {
     if (!loading && activeTab) {
-      const navbarElement = document.getElementById('dept-sub-navbar');
-      if (navbarElement) {
-        const elementRect = navbarElement.getBoundingClientRect();
-        const absoluteElementTop = elementRect.top + window.pageYOffset;
+      const targetElement = document.getElementById('dept-sub-navbar-wrapper') || document.getElementById('dept-sub-navbar');
+      if (targetElement) {
+        const elementRect = targetElement.getBoundingClientRect();
+        const absoluteElementTop = elementRect.top + window.scrollY;
         window.scrollTo({
-          top: Math.max(0, absoluteElementTop - 10),
+          top: Math.max(0, absoluteElementTop - 15),
           behavior: 'smooth'
         });
       }
@@ -300,10 +300,12 @@ export default function DeptPage() {
         })()}
       </div>
 
-      <DeptNavbar
-        activeTab={activeTab}
-        links={navbarLinks}
-      />
+      <div id="dept-sub-navbar-wrapper">
+        <DeptNavbar
+          activeTab={activeTab}
+          links={navbarLinks}
+        />
+      </div>
 
       <main className="flex-1 py-4 bg-white min-h-[250px]">
         <div className="container mx-auto max-w-[1140px] px-[15px]">
