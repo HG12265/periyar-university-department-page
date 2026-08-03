@@ -11,52 +11,54 @@ export function sanitizeHtml(html, options = {}) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
-    // Dynamic PDF links inside any table to premium dual buttons transformation
+    // Dynamic PDF links inside any table to premium dual action buttons transformation
     const tables = doc.querySelectorAll('table');
     tables.forEach(table => {
       const rows = table.querySelectorAll('tbody tr, tr');
       rows.forEach(row => {
         const tds = row.querySelectorAll('td');
         tds.forEach((td) => {
-          const anchor = td.querySelector('a');
-          if (anchor && !td.querySelector('.syllabus-actions-wrapper')) {
-            let fileUrl = (anchor.getAttribute('href') || '').replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, '');
-            const lowerUrl = fileUrl.toLowerCase();
-            const isPdf = lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('/pdf');
-            if (isPdf) {
-              // Extract a descriptive title from this row for the download filename and tooltips
-              let itemTitle = '';
-              if (tds[1]) itemTitle = tds[1].textContent.trim();
-              if (!itemTitle && tds[0]) itemTitle = tds[0].textContent.trim();
-              if (!itemTitle || itemTitle.length < 2 || /^\d+$/.test(itemTitle)) {
-                itemTitle = anchor.textContent.trim();
-              }
-              if (!itemTitle || itemTitle === 'View' || itemTitle === 'Download' || itemTitle.toLowerCase().includes('attachment')) {
-                itemTitle = 'Attachment';
-              }
-              
-              const safeTitle = itemTitle.replace(/[^a-zA-Z0-9]/g, '_');
-              
-              // Set the cell content to the premium dual actions wrapper
-              const wrapperHtml = `
-                <span class="syllabus-actions-wrapper" style="display: inline-flex !important; gap: 10px !important; align-items: center !important; vertical-align: middle !important; padding: 4px 0 !important;">
-                  <a href="${fileUrl}" target="_blank" class="syllabus-action-btn view" title="View ${itemTitle}" style="display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 36px !important; height: 36px !important; border-radius: 8px !important; background-color: #ecfdf5 !important; color: #059669 !important; border: 1.5px solid #a7f3d0 !important; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important; cursor: pointer !important; text-decoration: none !important; padding: 0 !important;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 18px !important; height: 18px !important; stroke-width: 2.5 !important; transition: transform 0.2s ease !important;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  </a>
-                  <a href="${fileUrl}" download="${safeTitle}.pdf" class="syllabus-action-btn download" title="Download ${itemTitle}" style="display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 36px !important; height: 36px !important; border-radius: 8px !important; background-color: #eff6ff !important; color: #1d4ed8 !important; border: 1.5px solid #bfdbfe !important; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important; cursor: pointer !important; text-decoration: none !important; padding: 0 !important;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 18px !important; height: 18px !important; stroke-width: 2.5 !important; transition: transform 0.2s ease !important;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  </a>
-                </span>
-              `.trim();
-              
-              const temp = doc.createElement('div');
-              temp.innerHTML = wrapperHtml;
-              const wrapperNode = temp.firstChild;
-              if (anchor.parentNode) {
-                anchor.parentNode.replaceChild(wrapperNode, anchor);
+          const anchors = Array.from(td.querySelectorAll('a'));
+          anchors.forEach((anchor) => {
+            if (anchor && !anchor.closest('.syllabus-actions-wrapper') && !anchor.closest('.pdf-action-item')) {
+              let fileUrl = (anchor.getAttribute('href') || '').replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, '');
+              const lowerUrl = fileUrl.toLowerCase();
+              const isPdf = lowerUrl.endsWith('.pdf') || lowerUrl.includes('.pdf?') || lowerUrl.includes('/pdf');
+              if (isPdf) {
+                // Extract label name from the anchor text
+                let labelText = anchor.textContent.trim();
+                labelText = labelText.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+                
+                let showLabelText = true;
+                if (!labelText || labelText === 'View' || labelText === 'Download' || labelText.toLowerCase().includes('attachment')) {
+                  showLabelText = false;
+                  labelText = 'Attachment';
+                }
+
+                const safeTitle = labelText.replace(/[^a-zA-Z0-9]/g, '_');
+                
+                // Create individual action item for this specific PDF link
+                const wrapperHtml = `
+                  <span class="pdf-action-item" style="display: inline-flex !important; align-items: center !important; gap: 6px !important; margin: 4px 8px 4px 0 !important; vertical-align: middle !important; background-color: #f8fafc !important; padding: 4px 8px !important; border-radius: 8px !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 1px 2px rgba(0,0,0,0.03) !important;">
+                    ${showLabelText ? `<span style="font-size: 12.5px !important; font-weight: 700 !important; color: #990033 !important; font-family: sans-serif !important; margin-right: 2px !important;">${labelText}</span>` : ''}
+                    <a href="${fileUrl}" target="_blank" class="syllabus-action-btn view" title="View ${labelText}" style="display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 32px !important; height: 32px !important; border-radius: 6px !important; background-color: #ecfdf5 !important; color: #059669 !important; border: 1.5px solid #a7f3d0 !important; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important; transition: all 0.2s ease !important; cursor: pointer !important; text-decoration: none !important; padding: 0 !important;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px !important; height: 16px !important; stroke-width: 2.5 !important;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </a>
+                    <a href="${fileUrl}" download="${safeTitle}.pdf" class="syllabus-action-btn download" title="Download ${labelText}" style="display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 32px !important; height: 32px !important; border-radius: 6px !important; background-color: #eff6ff !important; color: #1d4ed8 !important; border: 1.5px solid #bfdbfe !important; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important; transition: all 0.2s ease !important; cursor: pointer !important; text-decoration: none !important; padding: 0 !important;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px !important; height: 16px !important; stroke-width: 2.5 !important;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    </a>
+                  </span>
+                `.trim();
+                
+                const temp = doc.createElement('div');
+                temp.innerHTML = wrapperHtml;
+                const wrapperNode = temp.firstChild;
+                if (anchor.parentNode) {
+                  anchor.parentNode.replaceChild(wrapperNode, anchor);
+                }
               }
             }
-          }
+          });
         });
       });
     });
