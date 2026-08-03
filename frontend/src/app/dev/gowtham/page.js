@@ -1,15 +1,7 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-
-export const metadata = {
-  title: 'G Gowtham | Full-Stack Developer',
-  description: 'Developer Profile of G Gowtham, Full-Stack Developer - Periyar University Department Portal',
-  openGraph: {
-    title: 'G Gowtham | Full-Stack Developer',
-    description: 'Master of Computer Application | Full-Stack Developer',
-    images: ['https://periyaruniversity.site/gowtham.jpg'],
-  },
-};
 
 export default function GowthamDevPage() {
   const skills = [
