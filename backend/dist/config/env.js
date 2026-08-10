@@ -7,17 +7,14 @@ exports.getJwtSecret = exports.getResumeDbConfig = exports.getPrimaryDbConfig = 
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 const zod_1 = require("zod");
-// Load environmental variables from all potential file paths & working directories
-dotenv_1.default.config();
-dotenv_1.default.config({ path: path_1.default.resolve(process.cwd(), '.env') });
+// Load environmental variables from .env file
 dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../../.env') });
-dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../.env') });
 const envSchema = zod_1.z.object({
-    PORT: zod_1.z.union([zod_1.z.string(), zod_1.z.number()]).default(5000),
+    PORT: zod_1.z.coerce.number().default(5000),
     NODE_ENV: zod_1.z.enum(['development', 'production', 'test']).default('development'),
     // Security Configurations
-    SECRET_KEY: zod_1.z.string().min(8, 'SECRET_KEY must be at least 8 characters long').default('periyar_univ_dept_portal_secret_key_2026'),
-    JWT_SECRET: zod_1.z.string().default('periyar_univ_dept_portal_secure_jwt_key_2026'),
+    SECRET_KEY: zod_1.z.string().min(8, 'SECRET_KEY must be at least 8 characters long'),
+    JWT_SECRET: zod_1.z.string().optional(),
     // Primary DB Configurations
     DB_USER: zod_1.z.string().default('root'),
     DB_PASSWORD: zod_1.z.string().default(''),
