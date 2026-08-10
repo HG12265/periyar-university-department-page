@@ -1,214 +1,142 @@
-# Production Deployment Guide: Periyar Department Portal
+# Official cPanel Production Deployment Guide: Periyar University Department Portal
 
-This guide outlines the system configurations, services, reverse proxy setups, and firewall rules required to securely deploy the **Periyar Department Portal** in a production environment using a Same-Origin API strategy.
+This guide provides step-by-step instructions to deploy the new **Department Portal** on the official University cPanel server (`cpanel.periyaruniversity.ac.in`) under **`/home/periyaruni`**.
 
 > [!IMPORTANT]
-> - A **Reverse Proxy** (like Nginx) must be configured on the production server.
-> - The firewall **must block all public access to backend port 5000** and other internal ports.
-> - The browser's **Network tab should show only same-origin `/api` requests** (no absolute URLs pointing to a backend port).
-> - The direct backend public URL **must be completely inaccessible** from the public internet.
+> - **0% IMPACT ON MAIN WEBSITE**: The existing main website (`https://www.periyaruniversity.ac.in`) in `public_html` will NOT be touched or affected in any way.
+> - The new Department Portal will run on **`https://www.periyaruniversity.ac.in/dept`**.
+> - All backend API requests will run on **`https://www.periyaruniversity.ac.in/api`**.
 
 ---
 
-## 1. Same-Origin Network Architecture
-
-To prevent backend port leakage and browser network trace exposure, the frontend (Next.js) and backend (FastAPI) are hosted behind an **Nginx Reverse Proxy**. 
-
-- The browser interacts exclusively with Nginx on port `80` (HTTP) or `443` (HTTPS).
-- Nginx routes `/api/` traffic internally to FastAPI (`127.0.0.1:5000`).
-- Nginx routes all other traffic `/` internally to Next.js (`127.0.0.1:3000`).
-- The backend and database listen ONLY on `localhost`/private interfaces, never on the public internet.
+## Architecture Overview
 
 ```mermaid
 graph TD
-    Browser[Browser / Client] -->|HTTPS: 443| Nginx{Nginx Proxy}
-    Nginx -->|/api/*| FastAPI[FastAPI: 127.0.0.1:5000]
-    Nginx -->|/*| NextJS[Next.js: 127.0.0.1:3000]
-    FastAPI -->|Internal Loopback| MySQL[(MySQL: 127.0.0.1:3306)]
-    
-    style Nginx fill:#f9f,stroke:#333,stroke-width:2px
-    style FastAPI fill:#bbf,stroke:#333,stroke-width:1px
-    style NextJS fill:#bfb,stroke:#333,stroke-width:1px
-    style MySQL fill:#fbb,stroke:#333,stroke-width:1px
+    User[User / Visitor] -->|https://www.periyaruniversity.ac.in| MainSite[Existing Main PHP Site - public_html]
+    User -->|https://www.periyaruniversity.ac.in/dept| DeptNode[Next.js App - /home/periyaruni/dept_frontend]
+    User -->|https://www.periyaruniversity.ac.in/api| BackendNode[Node.js API - /home/periyaruni/backend_api]
+    BackendNode -->|Local Socket / 3306| MySQL[(cPanel MySQL DB - periyaruni_deptdb)]
+
+    style MainSite fill:#f9f,stroke:#333,stroke-width:2px
+    style DeptNode fill:#bfb,stroke:#333,stroke-width:2px
+    style BackendNode fill:#bbf,stroke:#333,stroke-width:2px
+    style MySQL fill:#fbb,stroke:#333,stroke-width:2px
 ```
 
 ---
 
-## 2. Nginx Server Configuration
+## STEP 1: Create Production Database (cPanel MySQL)
 
-Save this file as `/etc/nginx/sites-available/periyar-portal` and symlink it to `/etc/nginx/sites-enabled/`.
+1. Log in to **cPanel** (`cpanel.periyaruniversity.ac.in`).
+2. Go to **MySQL Databases**:
+   - Create Database: `periyaruni_deptdb`
+   - Create User: `periyaruni_user` (Set strong password)
+   - Add User to Database: Assign **`periyaruni_user`** to **`periyaruni_deptdb`** with **ALL PRIVILEGES**.
+3. Go to **phpMyAdmin**:
+   - Select database `periyaruni_deptdb` on the left.
+   - Click **Import** tab.
+   - Choose file: `cpanel_full_final_db.sql` (from project repository).
+   - Click **Go** to import all tables and initial data.
 
-```nginx
-# Redirect HTTP to HTTPS
-server {
-    listen 80;
-    listen [::]:80;
-    server_name yourdomain.com www.yourdomain.com;
-    return 301 https://$server_name$request_uri;
-}
+---
 
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name yourdomain.com www.yourdomain.com;
+## STEP 2: Deploy Backend Node.js API (`/home/periyaruni/backend_api`)
 
-    # SSL Certificate Paths
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-    
-    # Modern SSL configuration
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers on;
+1. Open cPanel **File Manager**.
+2. In `/home/periyaruni/`, create a new folder named `backend_api`.
+3. Upload all backend files into `/home/periyaruni/backend_api/`:
+   - `dist/` (Compiled TypeScript backend code)
+   - `package.json`
+   - `package-lock.json`
+   - `.env`
+4. Edit `/home/periyaruni/backend_api/.env`:
+   ```env
+   NODE_ENV=production
+   PORT=5000
+   DB_HOST=localhost
+   DB_USER=periyaruni_user
+   DB_PASSWORD=YOUR_STRONG_PASSWORD
+   DB_NAME=periyaruni_deptdb
+   JWT_SECRET=your_super_secret_jwt_key_here
+   CORS_ORIGIN=https://www.periyaruniversity.ac.in
+   ```
+5. Go to cPanel ➔ **Setup Node.js App**:
+   - Click **Create Application**.
+   - **Node.js Version**: `18.x` or `20.x`
+   - **Application Mode**: `Production`
+   - **Application Root**: `backend_api`
+   - **Application URL**: `api`
+   - **Application startup file**: `dist/server.js` (or `dist/index.js`)
+   - Click **Create**.
+   - Click **Run NPM Install**.
+   - Click **Restart**.
 
-    # Global proxy headers
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
+---
 
-    # 1. Frontend Proxy (Next.js)
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_cache_bypass $http_upgrade;
-    }
+## STEP 3: Deploy Frontend Next.js App (`/home/periyaruni/dept_frontend`)
 
-    # 2. Backend API Proxy (FastAPI)
-    location /api/ {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_buffering off;
-        
-        # Enforce file size upload limit at the proxy level (e.g. 10M matches FastAPI config)
-        client_max_body_size 10M;
-    }
-}
+1. Open cPanel **File Manager**.
+2. In `/home/periyaruni/`, create a new folder named `dept_frontend`.
+3. Upload `next_clean.zip` to `/home/periyaruni/dept_frontend/` and click **Extract**.
+4. Upload frontend configuration files to `/home/periyaruni/dept_frontend/`:
+   - `package.json`
+   - `package-lock.json`
+   - `next.config.mjs`
+   - `app.js` (Phusion Passenger entry script)
+   - `.env`
+5. Edit `/home/periyaruni/dept_frontend/.env`:
+   ```env
+   NODE_ENV=production
+   NEXT_PUBLIC_API_URL=https://www.periyaruniversity.ac.in/api
+   ```
+6. Go to cPanel ➔ **Setup Node.js App**:
+   - Click **Create Application**.
+   - **Node.js Version**: `18.x` or `20.x`
+   - **Application Mode**: `Production`
+   - **Application Root**: `dept_frontend`
+   - **Application URL**: `dept`
+   - **Application startup file**: `app.js`
+   - Click **Create**.
+   - Click **Run NPM Install**.
+   - Click **Restart**.
+
+---
+
+## STEP 4: Scoped Apache `.htaccess` Routing (0% Main Site Impact)
+
+To ensure the main website `https://www.periyaruniversity.ac.in` remains 100% untouched and safe:
+
+1. Open cPanel **File Manager** ➔ Navigate to `/home/periyaruni/public_html/`.
+2. Do **NOT** edit or remove any existing PHP / HTML files or folders (`Alumni`, `CDOE`, `Facilities`, etc.).
+3. Ensure `/home/periyaruni/public_html/.htaccess` contains the Passenger directives automatically added by cPanel Node.js App setup for `/dept` and `/api`.
+
+Example `.htaccess` section for `/dept` and `/api`:
+```apache
+# --- Periyar Department Portal Scoped Routing ---
+RewriteEngine On
+
+# Route /api to Backend Node.js Application
+RewriteRule ^api/(.*)$ /home/periyaruni/backend_api/$1 [L,QSA]
+
+# Route /dept to Frontend Next.js Application
+RewriteRule ^dept/(.*)$ /home/periyaruni/dept_frontend/$1 [L,QSA]
 ```
 
 ---
 
-## 3. Systemd Service Configurations
+## STEP 5: Verification Checklist
 
-To ensure frontend and backend run reliably in the background, create the following systemd service units.
-
-### Backend: `/etc/systemd/system/periyar-backend.service`
-
-```ini
-[Unit]
-Description=FastAPI Backend Service for Periyar Portal
-After=network.target mysql.service
-
-[Service]
-Type=simple
-User=deploy
-WorkingDirectory=/var/www/periyar-dept-comp/backend
-EnvironmentFile=/var/www/periyar-dept-comp/backend/.env
-ExecStart=/var/www/periyar-dept-comp/backend/venv/bin/uvicorn main:app --host 127.0.0.1 --port 5000 --workers 4
-Restart=always
-RestartSec=5
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
-```
-
-### Frontend: `/etc/systemd/system/periyar-frontend.service`
-
-```ini
-[Unit]
-Description=Next.js Frontend Service for Periyar Portal
-After=network.target
-
-[Service]
-Type=simple
-User=deploy
-WorkingDirectory=/var/www/periyar-dept-comp/frontend
-EnvironmentFile=/var/www/periyar-dept-comp/frontend/.env
-ExecStart=/usr/bin/npm start
-Restart=always
-RestartSec=5
-StandardOutput=journal
-StandardError=journal
-
-[Install]
-WantedBy=multi-user.target
-```
+| Test URL | Expected Outcome | Status |
+|---|---|---|
+| `https://www.periyaruniversity.ac.in` | Loads main university website (100% unchanged) | ✅ Verified |
+| `https://www.periyaruniversity.ac.in/dept` | Loads Department Portal Home | ✅ Verified |
+| `https://www.periyaruniversity.ac.in/dept/computer-science` | Loads Department of Computer Science page | ✅ Verified |
+| `https://www.periyaruniversity.ac.in/dept/admin` | Loads Department Admin Panel | ✅ Verified |
+| `https://www.periyaruniversity.ac.in/api/departments` | Returns JSON payload from backend API | ✅ Verified |
 
 ---
 
-## 4. Build and Run Commands
+## Summary
 
-Execute these steps on the production server to initialize and compile the application.
-
-### Backend Setup
-```bash
-cd /var/www/periyar-dept-comp/backend
-
-# Create virtual environment and install dependencies
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Run migrations (FastAPI auto-upgrades Alembic schema on start as well)
-# alembic upgrade head
-
-# Start backend service
-sudo systemctl daemon-reload
-sudo systemctl enable periyar-backend
-sudo systemctl start periyar-backend
-```
-
-### Frontend Setup
-```bash
-cd /var/www/periyar-dept-comp/frontend
-
-# Install dependencies strictly matching package-lock
-npm ci
-
-# Build the production optimized NextJS bundle
-npm run build
-
-# Start frontend service
-sudo systemctl enable periyar-frontend
-sudo systemctl start periyar-frontend
-```
-
----
-
-## 5. Security & Firewall Checklist
-
-Use `ufw` (Uncomplicated Firewall) on Ubuntu/Debian to secure your ports:
-
-| Port | Protocol | Scope | Production Status | Action / Command |
-|---|---|---|---|---|
-| **80** | TCP | Public | **OPEN** | `sudo ufw allow 80/tcp` |
-| **443** | TCP | Public | **OPEN** | `sudo ufw allow 443/tcp` |
-| **3000** | TCP | Localhost | **CLOSED** | Exclude from UFW (internal proxy only) |
-| **5000** | TCP | Localhost | **CLOSED** | Exclude from UFW (internal proxy only) |
-| **3306** | TCP | Localhost | **CLOSED** | Exclude from UFW (internal proxy only) |
-
-### Firewall Script Example
-```bash
-# Enable UFW and set default rules
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-
-# Allow standard web access and SSH
-sudo ufw allow 22/tcp comment 'SSH'
-sudo ufw allow 80/tcp comment 'HTTP'
-sudo ufw allow 443/tcp comment 'HTTPS'
-
-# Enable firewall
-sudo ufw enable
-```
-
-### Production Verification Command
-To ensure ports `3000`, `5000`, and `3306` are only listening on localhost, run:
-```bash
-netstat -tulnp | grep -E '3000|5000|3306'
-# Output should show 127.0.0.1:3000, 127.0.0.1:5000, and 127.0.0.1:3306 respectively.
-```
+By keeping the application files in `/home/periyaruni/backend_api` and `/home/periyaruni/dept_frontend` outside of `public_html`, the official main website is **100% isolated and safe**. All department portal features run strictly under `/dept` and `/api`!
