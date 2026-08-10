@@ -9,7 +9,7 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const envSchema = z.object({
-  PORT: z.coerce.number().default(5000),
+  PORT: z.union([z.string(), z.number()]).default(5000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   
   // Security Configurations

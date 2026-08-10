@@ -13,7 +13,7 @@ dotenv_1.default.config({ path: path_1.default.resolve(process.cwd(), '.env') })
 dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../../.env') });
 dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../.env') });
 const envSchema = zod_1.z.object({
-    PORT: zod_1.z.coerce.number().default(5000),
+    PORT: zod_1.z.union([zod_1.z.string(), zod_1.z.number()]).default(5000),
     NODE_ENV: zod_1.z.enum(['development', 'production', 'test']).default('development'),
     // Security Configurations
     SECRET_KEY: zod_1.z.string().min(8, 'SECRET_KEY must be at least 8 characters long').default('periyar_univ_dept_portal_secret_key_2026'),

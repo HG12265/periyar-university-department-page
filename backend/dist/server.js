@@ -100,12 +100,12 @@ async function bootstrap() {
         // 9. Schedule Background Cron Jobs
         authService_1.AuthService.startTokenCleanupJob();
         resumeService_1.ResumeService.startResumeRegenCron();
-        // 10. Start Server
-        const port = env_1.env.PORT;
+        // 10. Start Server (supports Passenger dynamic socket or custom port)
+        const port = process.env.PORT || env_1.env.PORT || 5000;
         const server = app.listen(port, () => {
             logger_1.logger.info(`===================================================`);
             logger_1.logger.info(`🚀 SERVER RUNNING SUCCESSFULLY IN ${env_1.env.NODE_ENV.toUpperCase()} MODE`);
-            logger_1.logger.info(`🔊 Listening on http://localhost:${port}`);
+            logger_1.logger.info(`🔊 Listening on port/socket: ${port}`);
             logger_1.logger.info(`===================================================`);
         });
         // Graceful Shutdown Handler

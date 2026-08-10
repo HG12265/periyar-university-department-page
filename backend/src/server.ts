@@ -112,12 +112,12 @@ async function bootstrap() {
     AuthService.startTokenCleanupJob();
     ResumeService.startResumeRegenCron();
 
-    // 10. Start Server
-    const port = env.PORT;
+    // 10. Start Server (supports Passenger dynamic socket or custom port)
+    const port = process.env.PORT || env.PORT || 5000;
     const server = app.listen(port, () => {
       logger.info(`===================================================`);
       logger.info(`🚀 SERVER RUNNING SUCCESSFULLY IN ${env.NODE_ENV.toUpperCase()} MODE`);
-      logger.info(`🔊 Listening on http://localhost:${port}`);
+      logger.info(`🔊 Listening on port/socket: ${port}`);
       logger.info(`===================================================`);
     });
 
