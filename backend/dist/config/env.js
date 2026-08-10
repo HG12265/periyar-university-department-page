@@ -17,7 +17,7 @@ const envSchema = zod_1.z.object({
     JWT_SECRET: zod_1.z.string().optional(),
     // Primary DB Configurations
     DB_USER: zod_1.z.string().default('root'),
-    DB_PASSWORD: zod_1.z.string().default(''),
+    DB_PASSWORD: zod_1.z.string().default(process.env.DB_PASS || ''),
     DB_HOST: zod_1.z.string().default('localhost'),
     DB_NAME: zod_1.z.string().default('periyar_univ'),
     DATABASE_URL: zod_1.z.string().optional(),
