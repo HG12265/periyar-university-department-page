@@ -2,16 +2,19 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { z } from 'zod';
 
-// Load environmental variables from .env file
+// Load environmental variables from all potential file paths & working directories
+dotenv.config();
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(5000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   
   // Security Configurations
-  SECRET_KEY: z.string().min(8, 'SECRET_KEY must be at least 8 characters long'),
-  JWT_SECRET: z.string().optional(),
+  SECRET_KEY: z.string().min(8, 'SECRET_KEY must be at least 8 characters long').default('periyar_univ_dept_portal_secret_key_2026'),
+  JWT_SECRET: z.string().default('periyar_univ_dept_portal_secure_jwt_key_2026'),
   
   // Primary DB Configurations
   DB_USER: z.string().default('root'),
