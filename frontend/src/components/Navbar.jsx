@@ -50,7 +50,7 @@ const defaultMenuItems = [
   {
     label: 'Academic',
     links: [
-      { name: 'Schools and Departments', url: '/dept' },
+      { name: 'Schools and Departments', url: '/' },
       { name: 'CBCS Regulations', url: 'https://www.periyaruniversity.ac.in/Documents/2021/CBCS_Regulations.pdf' },
       { name: 'Centres and Cells', url: 'https://www.periyaruniversity.ac.in/Centres.php' },
       { name: 'Awards and Honors', url: 'https://www.periyaruniversity.ac.in/Awards.php' },

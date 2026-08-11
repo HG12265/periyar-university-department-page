@@ -15,7 +15,7 @@ const envSchema = z.object({
   
   // Primary DB Configurations
   DB_USER: z.string().default('root'),
-  DB_PASSWORD: z.string().default(process.env.DB_PASS || ''),
+  DB_PASSWORD: z.string().default(''),
   DB_HOST: z.string().default('localhost'),
   DB_NAME: z.string().default('periyar_univ'),
   DATABASE_URL: z.string().optional(),

@@ -9,7 +9,7 @@ const academicLinksCol1 = [
   { name: 'PG Research Studies', url: 'https://www.periyaruniversity.ac.in/Dept/pgex.php' },
   { name: 'Physical Education', url: 'https://www.periyaruniversity.ac.in/PhyEdu.php' },
   { name: 'PU-CRI', url: 'https://www.periyaruniversity.ac.in/centre/CRI/' },
-  { name: 'Schools and Departments', url: '/dept' }
+  { name: 'Schools and Departments', url: '/' }
 ];
 
 const academicLinksCol2 = [
