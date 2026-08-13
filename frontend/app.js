@@ -6,7 +6,7 @@ const next = require('next');
 const logFile = path.join(__dirname, 'debug.log');
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}\n`;
-  try { fs.appendFileSync(logFile, line); } catch (e) { }
+  try { fs.appendFileSync(logFile, line); } catch(e) {}
 }
 
 log('Starting app.js initialization...');

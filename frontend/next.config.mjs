@@ -1,8 +1,11 @@
+const isProd = process.env.NODE_ENV === 'production';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/dept' : '',
+  basePath: isProd ? '/dept' : '',
+  assetPrefix: isProd ? '/dept' : '',
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
+    removeConsole: isProd ? { exclude: ['error'] } : false,
   },
   async headers() {
     const isProd = process.env.NODE_ENV === 'production';
