@@ -333,7 +333,7 @@ export default function AdminDashboard() {
                       </Link>
 
                       <Link
-                        href={`/admin/edit/${dept.id}`}
+                        href={`/dept/admin/edit/${dept.id}`}
                         className="flex-1 text-center py-2 px-3 bg-gradient-to-r from-blue-700 to-indigo-800 text-white rounded-lg text-xs font-bold hover:shadow-md hover:from-blue-600 hover:to-indigo-700 transition-all no-underline shadow-sm"
                       >
                         ✏️ Edit Content

@@ -58,7 +58,7 @@ function EditDepartmentContent() {
           {/* Breadcrumbs / Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-              <Link href="/admin" className="hover:text-blue-600 no-underline transition-colors">Admin</Link>
+              <Link href="/dept/admin" className="hover:text-blue-600 no-underline transition-colors">Admin</Link>
               <span>/</span>
               <span onClick={() => { setView('dashboard'); setActiveCategory(null); }} className="cursor-pointer hover:text-blue-600 transition-colors">{dept.name}</span>
               {activeCategory && (

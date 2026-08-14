@@ -8,12 +8,12 @@ export default function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   const menuItems = [
-    { label: 'Dashboard', href: '/admin', icon: '📊' },
-    { label: 'Publications', href: '/admin/publications', icon: '📚' },
-    { label: 'Foreign Visits', href: '/admin/foreign-visits', icon: '✈️' },
-    { label: 'Event Organizers', href: '/admin/organizers', icon: '🎪' },
-    { label: 'Resume Management', href: '/admin/resumes', icon: '📄' },
-    { label: 'View Live Site', href: '/', icon: '🌐' }
+    { label: 'Dashboard', href: '/dept/admin', icon: '📊' },
+    { label: 'Publications', href: '/dept/admin/publications', icon: '📚' },
+    { label: 'Foreign Visits', href: '/dept/admin/foreign-visits', icon: '✈️' },
+    { label: 'Event Organizers', href: '/dept/admin/organizers', icon: '🎪' },
+    { label: 'Resume Management', href: '/dept/admin/resumes', icon: '📄' },
+    { label: 'View Live Site', href: '/dept', icon: '🌐' }
   ];
 
   return (
