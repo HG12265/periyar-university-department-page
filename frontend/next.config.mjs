@@ -1,14 +1,13 @@
+/** @type {import('next').NextConfig} */
 const isProd = process.env.NODE_ENV === 'production';
 
-/** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: isProd ? '/dept' : '',
-  assetPrefix: isProd ? '/dept' : '',
+  // No basePath - cPanel Passenger handles the /dept subpath mapping
+  // No assetPrefix - we serve _next/static ourselves in app.js
   compiler: {
     removeConsole: isProd ? { exclude: ['error'] } : false,
   },
   async headers() {
-    const isProd = process.env.NODE_ENV === 'production';
     const apiDomain = isProd ? '' : ' http://localhost:5000';
     return [
       {
@@ -23,10 +22,6 @@ const nextConfig = {
             value: 'max-age=63072000; includeSubDomains; preload',
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
@@ -38,21 +33,14 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
-          },
-          {
-            key: 'Cross-Origin-Resource-Policy',
-            value: 'same-origin',
-          },
         ],
       },
     ];
   },
   async rewrites() {
-    const isProd = process.env.NODE_ENV === 'production';
-    const destination = isProd ? 'http://backend:5000/api/:path*' : 'http://localhost:5000/api/:path*';
+    const destination = isProd
+      ? 'https://www.periyaruniversity.ac.in/api/:path*'
+      : 'http://localhost:5000/api/:path*';
     return [
       {
         source: '/api/:path*',
