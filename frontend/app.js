@@ -105,9 +105,11 @@ app.prepare().then(() => {
     // We also try admin/resume routes by rewriting /dept/admin → /admin
     let pageUrl = pathname + (parsedUrl.search || '');
 
-    // Remap /dept/admin* → /admin* and /dept/resume → /resume
+    // Remap /dept/admin* → /admin*, /dept/dev* → /dev*, and /dept/resume → /resume
     if (pathname === '/dept/admin' || pathname.startsWith('/dept/admin/')) {
       pageUrl = pathname.replace('/dept/admin', '/admin') + (parsedUrl.search || '');
+    } else if (pathname === '/dept/dev' || pathname.startsWith('/dept/dev/')) {
+      pageUrl = pathname.replace('/dept/dev', '/dev') + (parsedUrl.search || '');
     } else if (pathname === '/dept/resume') {
       pageUrl = '/resume' + (parsedUrl.search || '');
     }
