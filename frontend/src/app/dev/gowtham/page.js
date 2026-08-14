@@ -38,7 +38,7 @@ export default function GowthamDevPage() {
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
               <img
-                src="/gowtham.jpg"
+                src="/dept/gowtham.jpg"
                 alt="G Gowtham"
                 className="relative w-[220px] sm:w-[240px] md:w-[250px] h-[280px] sm:h-[300px] md:h-[310px] object-cover rounded-2xl shadow-md border border-slate-100/80"
               />
@@ -146,7 +146,7 @@ export default function GowthamDevPage() {
         {/* Card Footer: Back to Portal Button */}
         <div className="flex justify-end mt-8 pt-6 border-t border-slate-100">
           <Link
-            href="/"
+            href="/dept"
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-slate-200/90 text-slate-600 hover:text-slate-900 hover:border-slate-400 bg-white hover:bg-slate-50 text-xs font-bold transition-all shadow-2xs no-underline active:scale-95"
           >
             ← Back to Portal
