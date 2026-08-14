@@ -8,7 +8,7 @@
 
 @font-face {
   font-family: 'CMU Sans Serif Demi borderless';
-  src: url('/fonts/cmunss.ttf') format('truetype');
+  src: url('/dept/fonts/cmunss.ttf') format('truetype');
 }
 
 @keyframes scroll {

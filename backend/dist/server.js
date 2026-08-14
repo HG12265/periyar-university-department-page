@@ -48,7 +48,7 @@ async function bootstrap() {
             },
             credentials: true,
             methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'Cache-Control', 'X-Requested-With'],
+            allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'Cache-Control', 'X-Requested-With', 'Pragma', 'Expires'],
         }));
         app.use((0, helmet_1.default)()); // Basic security headers
         app.use(securityHeaders_1.securityHeaders); // Custom security policies matching Python's CSP
