@@ -2,8 +2,9 @@
 const isProd = process.env.NODE_ENV === 'production';
 
 const nextConfig = {
-  // No basePath - cPanel Passenger handles the /dept subpath mapping
-  // No assetPrefix - we serve _next/static ourselves in app.js
+  // assetPrefix makes browser request CSS/JS as /dept/_next/static/...
+  // which Apache correctly routes through Passenger to our Node.js app
+  assetPrefix: isProd ? '/dept' : '',
   compiler: {
     removeConsole: isProd ? { exclude: ['error'] } : false,
   },
