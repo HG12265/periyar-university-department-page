@@ -11,10 +11,13 @@ const secret = new TextEncoder().encode(getJwtSecret());
 // Extensible Hierarchical Role-Based Access Control (RBAC) Weightings
 export const ROLE_HIERARCHY: Record<string, number> = {
   viewer: 1,
+  editor: 2,
   content_editor: 2,
   faculty_editor: 3,
   dept_admin: 4,
+  admin: 5,
   super_admin: 5,
+  administrator: 5,
 };
 
 export const getCurrentUser = async (req: Request, res: Response, next: NextFunction) => {
