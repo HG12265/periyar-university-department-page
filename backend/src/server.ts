@@ -48,7 +48,7 @@ async function bootstrap() {
         },
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'Cache-Control', 'X-Requested-With'],
       })
     );
 

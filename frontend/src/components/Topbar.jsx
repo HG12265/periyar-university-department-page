@@ -27,7 +27,7 @@ export default function Topbar() {
           {/* Social Icons */}
           <div className="flex items-center md:ml-[115px]">
             <a href="https://www.facebook.com/profile.php?id=100085246909314" target="_blank" rel="noreferrer" className="px-[2px] md:py-[6px]" >
-              <img src="/fb.jpg" height="30" width="40" title="Facebook" alt="Facebook" className="h-[25px] md:h-[30px] w-auto" />
+              <img src="/dept/fb.jpg" height="30" width="40" title="Facebook" alt="Facebook" className="h-[25px] md:h-[30px] w-auto" />
             </a>
             <a href="https://www.instagram.com/periyar_univesity_official/" target="_blank" rel="noreferrer" className="px-[2px] flex items-center" title="Instagram">
               <svg viewBox="0 0 24 24" className="h-[21px] md:h-[26px] w-auto rounded-[5px]" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
@@ -47,10 +47,10 @@ export default function Topbar() {
               </svg>
             </a>
             <a href="https://twitter.com/PeriyarVarsity" target="_blank" rel="noreferrer" className="px-[2px]">
-              <img src="/twitter.png" height="25" width="35" title="Twitter" alt="Twitter" className="h-[20px] md:h-[25px] w-auto" />
+              <img src="/dept/twitter.png" height="25" width="35" title="Twitter" alt="Twitter" className="h-[20px] md:h-[25px] w-auto" />
             </a>
             <a href="https://www.youtube.com/channel/UCJqVMMa81Cnmu3LdLpsKXYw" target="_blank" rel="noreferrer" className="px-[2px]">
-              <img src="/youtube.png" height="40" width="45" title="Youtube" alt="Youtube" className="h-[30px] md:h-[40px] w-auto" />
+              <img src="/dept/youtube.png" height="40" width="45" title="Youtube" alt="Youtube" className="h-[30px] md:h-[40px] w-auto" />
             </a>
           </div>
 

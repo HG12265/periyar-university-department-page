@@ -230,7 +230,7 @@ export default function Navbar() {
           {/* Home Link Section */}
           <div className="px-3 md:px-3 py-2 md:py-0 border-b border-white/10 md:border-b-0 md:border-r border-white/20 flex items-center">
             <Link href="/" className="inline-block border border-white/30 p-[2px] rounded-sm">
-              <img src="/home.png" alt="Home" width={15} height={20} className="h-[18px] md:h-[18px] w-auto invert" />
+              <img src="/dept/home.png" alt="Home" width={15} height={20} className="h-[18px] md:h-[18px] w-auto invert" />
             </Link>
           </div>
 

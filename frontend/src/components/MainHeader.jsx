@@ -15,7 +15,7 @@ export default function MainHeader() {
               {/* Logo - Centered on mobile, left-aligned on desktop */}
               <div className="w-full md:w-auto flex justify-center md:justify-start flex-shrink-0">
                 <a href="https://www.periyaruniversity.ac.in/">
-                  <img src="/logo.JPG" alt="Logo" className="w-[130px] md:w-[150px] h-auto" />
+                  <img src="/dept/logo.JPG" alt="Logo" className="w-[130px] md:w-[150px] h-auto" />
                 </a>
               </div>
 
@@ -51,13 +51,13 @@ export default function MainHeader() {
           {/* Payment Portal */}
           <div className="w-full md:w-1/6 px-[15px] mt-4 md:mt-0 flex justify-center md:items-end pt-2 md:pt-10">
             <a href="https://www.periyaruniversity.ac.in/onlinepayment/" className="block hover:scale-105 transition-transform">
-              <img src="/PAYMENT.jpg" alt="PAYMENT" width="150" height="75" className="h-auto" />
+              <img src="/dept/PAYMENT.jpg" alt="PAYMENT" width="150" height="75" className="h-auto" />
             </a>
           </div>
 
           {/* Portrait */}
           <div className="w-full md:w-1/6 px-[15px] mt-4 md:mt-0 text-center md:text-right">
-            <img src="/periyar.jpg" height="200" width="180" className="inline-block h-auto rounded shadow-sm border border-gray-100" alt="Thanthai Periyar" />
+            <img src="/dept/periyar.jpg" height="200" width="180" className="inline-block h-auto rounded shadow-sm border border-gray-100" alt="Thanthai Periyar" />
           </div>
 
         </div>
