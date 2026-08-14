@@ -84,16 +84,16 @@ export default function FlipbookModal({ fileUrl, title, onClose }) {
   // ── Load PDF.js ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (window.pdfjsLib) {
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.min.js';
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/dept/js/pdf.worker.min.js';
       setLibLoaded(true);
       return;
     }
     const s    = document.createElement('script');
-    s.src      = '/js/pdf.min.js';
+    s.src      = '/dept/js/pdf.min.js';
     s.async    = true;
     s.onload   = () => {
       if (window.pdfjsLib) {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.min.js';
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = '/dept/js/pdf.worker.min.js';
         setLibLoaded(true);
       }
     };
