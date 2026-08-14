@@ -9,7 +9,6 @@ const logFile = path.join(__dirname, 'debug.log');
 function log(msg) {
   try { fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${msg}\n`); } catch (e) {}
 }
-
 log('=== app.js starting ===');
 
 const dev = false;
@@ -23,6 +22,7 @@ const MIME = {
   '.png':  'image/png',
   '.jpg':  'image/jpeg',
   '.jpeg': 'image/jpeg',
+  '.gif':  'image/gif',
   '.svg':  'image/svg+xml',
   '.ico':  'image/x-icon',
   '.webp': 'image/webp',
@@ -35,19 +35,15 @@ const MIME = {
 };
 
 function serveFile(filePath, res) {
-  if (!fs.existsSync(filePath)) {
-    res.statusCode = 404;
-    res.end('Not Found');
-    return;
-  }
+  if (!fs.existsSync(filePath)) return false;
   const ext = path.extname(filePath).toLowerCase();
-  const contentType = MIME[ext] || 'application/octet-stream';
   const data = fs.readFileSync(filePath);
   res.writeHead(200, {
-    'Content-Type': contentType,
-    'Cache-Control': 'public, max-age=31536000, immutable',
+    'Content-Type': MIME[ext] || 'application/octet-stream',
+    'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=31536000, immutable',
   });
   res.end(data);
+  return true;
 }
 
 app.prepare().then(() => {
@@ -55,49 +51,73 @@ app.prepare().then(() => {
 
   createServer(async (req, res) => {
     const parsedUrl = url.parse(req.url, true);
-    let pathname = parsedUrl.pathname || '/';
+    const pathname = parsedUrl.pathname || '/';
 
     log(`${req.method} ${pathname}`);
 
-    // Strip /dept prefix (Passenger passes full URL including /dept to our app)
-    // e.g., /dept/_next/static/css/xxx.css -> /_next/static/css/xxx.css
-    const stripped = pathname.startsWith('/dept/') ? pathname.slice(5) : pathname;
-
-    // Serve /_next/static/* directly from .next/static on disk
-    // (handles both /dept/_next/static/... and /_next/static/...)
-    if (stripped.startsWith('/_next/static/')) {
-      const relPath = stripped.replace('/_next/static/', '');
+    // ── 1. Handle /_next/static/* asset requests ───────────────────────────
+    // assetPrefix '/dept' means browser requests /dept/_next/static/css/xxx.css
+    // Passenger routes /dept/* to us, so we receive /dept/_next/static/css/xxx.css
+    // Strip /dept to get /_next/static/css/xxx.css and serve from .next/static/
+    if (pathname.startsWith('/dept/_next/static/')) {
+      const relPath = pathname.replace('/dept/_next/static/', '');
       const filePath = path.join(__dirname, '.next', 'static', relPath);
-      log(`Serving static: ${filePath} (exists: ${fs.existsSync(filePath)})`);
-      return serveFile(filePath, res);
+      log(`[STATIC] ${filePath} exists=${fs.existsSync(filePath)}`);
+      if (serveFile(filePath, res)) return;
+      res.statusCode = 404; res.end('Not Found'); return;
     }
 
-    // Serve /_next/image and other /_next/* via Next.js handler
-    if (stripped.startsWith('/_next/')) {
-      // Rewrite URL to stripped version so Next.js handles it correctly
-      req.url = stripped + (parsedUrl.search || '');
-      try {
-        await handle(req, res, url.parse(req.url, true));
-      } catch (err) {
-        log(`_next handler error: ${err.message}`);
-        if (!res.headersSent) { res.statusCode = 500; res.end('Error'); }
-      }
+    // ── 2. Handle /_next/* other internal requests (images, webpack, etc.) ──
+    if (pathname.startsWith('/dept/_next/')) {
+      req.url = pathname.replace('/dept/_next/', '/_next/') + (parsedUrl.search || '');
+      try { await handle(req, res, url.parse(req.url, true)); } catch(e) { log(e.message); }
       return;
     }
 
-    // Serve public/* files directly
-    const publicPath = path.join(__dirname, 'public', stripped);
-    if (fs.existsSync(publicPath) && fs.statSync(publicPath).isFile()) {
-      log(`Serving public: ${publicPath}`);
-      return serveFile(publicPath, res);
+    // ── 3. Also handle bare /_next/* (in case Passenger strips prefix) ──────
+    if (pathname.startsWith('/_next/static/')) {
+      const relPath = pathname.replace('/_next/static/', '');
+      const filePath = path.join(__dirname, '.next', 'static', relPath);
+      if (serveFile(filePath, res)) return;
     }
 
-    // All page requests — rewrite URL to stripped so Next.js routes correctly
-    req.url = stripped + (parsedUrl.search || '') || '/';
+    // ── 4. Serve public/* image/file requests ────────────────────────────────
+    // Handles /dept/logo.JPG, /dept/home.png, /dept/gowtham.jpg etc.
+    // Also bare /logo.JPG etc.
+    const pathsToTryForPublic = [];
+    if (pathname.startsWith('/dept/')) {
+      pathsToTryForPublic.push(pathname.slice('/dept'.length)); // strip /dept
+    }
+    pathsToTryForPublic.push(pathname); // try as-is
+
+    for (const candidate of pathsToTryForPublic) {
+      const publicFilePath = path.join(__dirname, 'public', candidate);
+      if (fs.existsSync(publicFilePath) && fs.statSync(publicFilePath).isFile()) {
+        log(`[PUBLIC] ${publicFilePath}`);
+        if (serveFile(publicFilePath, res)) return;
+      }
+    }
+
+    // ── 5. All page requests — pass AS-IS to Next.js ─────────────────────────
+    // /dept/computer-science → Next.js route /dept/[slug] ✓
+    // /dept/admin            → Next.js route /admin (will 404 from Next.js)
+    // /dept/                 → Next.js route /dept ✓
+    // We also try admin/resume routes by rewriting /dept/admin → /admin
+    let pageUrl = pathname + (parsedUrl.search || '');
+
+    // Remap /dept/admin* → /admin* and /dept/resume → /resume
+    if (pathname === '/dept/admin' || pathname.startsWith('/dept/admin/')) {
+      pageUrl = pathname.replace('/dept/admin', '/admin') + (parsedUrl.search || '');
+    } else if (pathname === '/dept/resume') {
+      pageUrl = '/resume' + (parsedUrl.search || '');
+    }
+
+    req.url = pageUrl;
+    log(`[PAGE] passing to Next.js: ${req.url}`);
     try {
       await handle(req, res, url.parse(req.url, true));
     } catch (err) {
-      log(`Page handler error for ${stripped}: ${err.message}`);
+      log(`[ERROR] ${err.message}`);
       if (!res.headersSent) { res.statusCode = 500; res.end('Internal Server Error'); }
     }
 
