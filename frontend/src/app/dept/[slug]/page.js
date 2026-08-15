@@ -332,7 +332,7 @@ export default function DeptPage() {
               <MuseumSection content={dept.sections?.find(s => s.category === 'museum')?.content} slug={dept.slug} />
             )}
 
-            {activeTab === 'facilities' && !dept.sections?.some(s => s.category === 'facilities' && s.content?.includes('[SPECIALIZED_FACILITIES]')) && (
+            {activeTab === 'facilities' && !dept.sections?.some(s => s.content?.includes('[SPECIALIZED_FACILITIES]')) && (
               <FacilitiesSection facilities={dept.facilities} />
             )}
 
@@ -371,7 +371,7 @@ export default function DeptPage() {
                               <img
                                 src={fullUrl}
                                 alt={evt.title || 'Facility photo'}
-                                className="w-full h-[250px] sm:h-[420px] object-cover rounded-[10px] shadow-md border-2 border-[#f0f0f0] block hover:scale-[1.01] transition-transform duration-300"
+                                className="w-full h-[250px] sm:h-[420px] object-contain p-2 bg-slate-50 rounded-[10px] shadow-md border-2 border-[#f0f0f0] block hover:scale-[1.01] transition-transform duration-300"
                               />
                             </div>
                           );
@@ -1082,7 +1082,7 @@ export default function DeptPage() {
                                       <img
                                         src={fullUrl}
                                         alt={evt.title || 'Facility photo'}
-                                        className="w-full aspect-[4/3] object-cover block hover:scale-105 transition-transform duration-550 ease-out"
+                                        className="w-full aspect-[4/3] object-contain p-2 bg-slate-50 block hover:scale-105 transition-transform duration-550 ease-out"
                                       />
                                     </div>
                                   );
