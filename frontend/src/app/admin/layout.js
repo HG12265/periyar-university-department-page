@@ -47,6 +47,28 @@ export default function AdminLayout({ children }) {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    if (!isAuthed) return;
+
+    // Background Keep-Alive: Ping /admin/me every 4 minutes so the session never expires while active
+    const interval = setInterval(async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+        let res = await fetch(`${apiUrl}/admin/me`);
+        if (res.status === 401) {
+          const refreshRes = await fetch(`${apiUrl}/admin/refresh`, { method: 'POST' });
+          if (refreshRes.ok) {
+            await fetch(`${apiUrl}/admin/me`);
+          }
+        }
+      } catch (err) {
+        // Ignore background network blips
+      }
+    }, 4 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [isAuthed]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {

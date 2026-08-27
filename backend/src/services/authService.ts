@@ -19,14 +19,14 @@ export interface TokenPayload {
 }
 
 export class AuthService {
-  // Mint Access (15m) and Refresh (7d) tokens using jose
+  // Mint Access (7d) and Refresh (30d) tokens using jose
   static async createSessionTokens(username: string, conn?: any): Promise<{ access_token: string; refresh_token: string }> {
     const accessJti = uuidv4();
     const refreshJti = uuidv4();
     
     const now = Math.floor(Date.now() / 1000);
-    const accessExp = now + 900;       // 15 minutes
-    const refreshExp = now + 604800;   // 7 days
+    const accessExp = now + (7 * 24 * 60 * 60);    // 7 days
+    const refreshExp = now + (30 * 24 * 60 * 60);  // 30 days
 
     const accessToken = await new jose.SignJWT({})
       .setProtectedHeader({ alg: 'HS256' })

@@ -49,13 +49,13 @@ const logger_1 = require("../config/logger");
 const db_1 = require("../db");
 const jwtSecret = new TextEncoder().encode((0, env_1.getJwtSecret)());
 class AuthService {
-    // Mint Access (15m) and Refresh (7d) tokens using jose
+    // Mint Access (7d) and Refresh (30d) tokens using jose
     static async createSessionTokens(username, conn) {
         const accessJti = (0, uuid_1.v4)();
         const refreshJti = (0, uuid_1.v4)();
         const now = Math.floor(Date.now() / 1000);
-        const accessExp = now + 900; // 15 minutes
-        const refreshExp = now + 604800; // 7 days
+        const accessExp = now + (7 * 24 * 60 * 60); // 7 days
+        const refreshExp = now + (30 * 24 * 60 * 60); // 30 days
         const accessToken = await new jose.SignJWT({})
             .setProtectedHeader({ alg: 'HS256' })
             .setSubject(username)

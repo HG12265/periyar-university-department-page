@@ -7,29 +7,29 @@ const env_1 = require("../config/env");
 // Helper to set auth cookies on the response object
 const setAuthCookies = (res, tokens) => {
     const isProd = env_1.env.NODE_ENV === 'production';
-    // 1. Access Token Cookie (15 minutes)
+    // 1. Access Token Cookie (7 days)
     res.cookie('access_token', tokens.access_token, {
         httpOnly: true,
         secure: isProd, // True in production
         sameSite: 'strict',
-        maxAge: 15 * 60 * 1000, // 15 mins in ms
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
         path: '/',
     });
-    // 2. Refresh Token Cookie (7 days)
+    // 2. Refresh Token Cookie (30 days)
     res.cookie('refresh_token', tokens.refresh_token, {
         httpOnly: true,
         secure: isProd,
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in ms
         path: '/',
     });
-    // 3. Double Submit CSRF Token Cookie (7 days, readable by client)
+    // 3. Double Submit CSRF Token Cookie (30 days, readable by client)
     const csrfToken = (0, uuid_1.v4)();
     res.cookie('csrf_token', csrfToken, {
         httpOnly: false,
         secure: isProd,
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 30 * 24 * 60 * 60 * 1000,
         path: '/',
     });
 };
