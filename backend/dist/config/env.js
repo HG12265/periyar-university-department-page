@@ -32,7 +32,25 @@ const envSchema = zod_1.z.object({
     PDF_STORAGE_PATH: zod_1.z.string().default('uploads/resumes'),
     UPLOAD_DIR: zod_1.z.string().default('uploads'),
     // CORS & Security Allowed Origins
-    ALLOWED_ORIGINS: zod_1.z.string().default('http://localhost:3000'),
+    ALLOWED_ORIGINS: zod_1.z.preprocess((val) => {
+        const raw = typeof val === 'string' && val.trim() ? val : (process.env.CORS_ORIGIN || '');
+        const defaults = [
+            'http://localhost:3000',
+            'http://localhost:5000',
+            'https://periyaruniversity.ac.in',
+            'https://www.periyaruniversity.ac.in',
+            'http://periyaruniversity.ac.in',
+            'http://www.periyaruniversity.ac.in',
+        ];
+        if (!raw)
+            return defaults.join(',');
+        const list = raw.split(',').map((s) => s.trim()).filter(Boolean);
+        defaults.forEach((d) => {
+            if (!list.includes(d))
+                list.push(d);
+        });
+        return list.join(',');
+    }, zod_1.z.string()),
     // Default Administrative Credentials Seeding
     ENABLE_DEFAULT_ADMIN_SEED: zod_1.z.preprocess((val) => String(val).toLowerCase() === 'true', zod_1.z.boolean()).default(false),
     ADMIN_USERNAME: zod_1.z.string().optional(),

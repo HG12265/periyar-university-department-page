@@ -11,48 +11,77 @@ function getCookie(name) {
   return '';
 }
 
-export default function FetchInterceptor() {
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+function installInterceptor() {
+  if (typeof window === 'undefined') return;
+  if (window.__FETCH_INTERCEPTOR_INSTALLED__) return;
+  window.__FETCH_INTERCEPTOR_INSTALLED__ = true;
 
-    const originalFetch = window.fetch;
+  const originalFetch = window.fetch;
 
-    window.fetch = async function (url, options = {}) {
-      const urlString = typeof url === 'string' ? url : (url && url.url) || '';
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+  window.fetch = async function (url, options = {}) {
+    let urlString = typeof url === 'string' ? url : (url && url.url) || '';
 
-      // Capture all fetch requests directed to the FastAPI backend API
-      if (urlString.includes(apiUrl) || urlString.startsWith('/api/')) {
-        // Enforce cookie transport via credentials: "include"
-        options.credentials = 'include';
+    // Auto-align API host to current origin if accessing periyaruniversity.ac.in
+    // (e.g. if page is loaded on periyaruniversity.ac.in without www, normalize www.periyaruniversity.ac.in to same origin)
+    if (window.location && window.location.hostname && window.location.hostname.includes('periyaruniversity.ac.in')) {
+      const currentOrigin = window.location.origin;
+      if (urlString.startsWith('https://www.periyaruniversity.ac.in/api')) {
+        urlString = urlString.replace('https://www.periyaruniversity.ac.in/api', `${currentOrigin}/api`);
+      } else if (urlString.startsWith('https://periyaruniversity.ac.in/api')) {
+        urlString = urlString.replace('https://periyaruniversity.ac.in/api', `${currentOrigin}/api`);
+      } else if (urlString.startsWith('http://www.periyaruniversity.ac.in/api')) {
+        urlString = urlString.replace('http://www.periyaruniversity.ac.in/api', `${currentOrigin}/api`);
+      } else if (urlString.startsWith('http://periyaruniversity.ac.in/api')) {
+        urlString = urlString.replace('http://periyaruniversity.ac.in/api', `${currentOrigin}/api`);
+      }
 
-        // Prepare request headers structure
-        if (!options.headers) {
-          options.headers = {};
-        }
+      if (typeof url === 'string') {
+        url = urlString;
+      } else if (url && url.url) {
+        url = new Request(urlString, url);
+      }
+    }
 
-        const isHeadersInstance = options.headers instanceof Headers;
-        const method = (options.method || 'GET').toUpperCase();
+    // Capture all fetch requests directed to the backend API
+    const isApiRequest = urlString.includes('/api') || urlString.startsWith('/api/') || urlString.includes('periyaruniversity.ac.in');
+    if (isApiRequest) {
+      if (!options) options = {};
+      // Enforce cookie transport via credentials: "include"
+      options.credentials = 'include';
 
-        // Inject the Double-Submit CSRF token header for all mutating HTTP verbs
-        if (['POST', 'PUT', 'DELETE'].includes(method)) {
-          const csrfToken = getCookie('csrf_token');
-          if (csrfToken) {
-            if (isHeadersInstance) {
-              options.headers.set('X-CSRF-Token', csrfToken);
-            } else {
-              options.headers['X-CSRF-Token'] = csrfToken;
-            }
+      // Prepare request headers structure
+      if (!options.headers) {
+        options.headers = {};
+      }
+
+      const isHeadersInstance = options.headers instanceof Headers;
+      const method = (options.method || 'GET').toUpperCase();
+
+      // Inject the Double-Submit CSRF token header for all mutating HTTP verbs
+      if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+        const csrfToken = getCookie('csrf_token');
+        if (csrfToken) {
+          if (isHeadersInstance) {
+            options.headers.set('X-CSRF-Token', csrfToken);
+          } else {
+            options.headers['X-CSRF-Token'] = csrfToken;
           }
         }
       }
+    }
 
-      return originalFetch(url, options);
-    };
+    return originalFetch(url, options);
+  };
+}
 
-    return () => {
-      window.fetch = originalFetch;
-    };
+// Immediate execution upon script evaluation in browser
+if (typeof window !== 'undefined') {
+  installInterceptor();
+}
+
+export default function FetchInterceptor() {
+  useEffect(() => {
+    installInterceptor();
   }, []);
 
   return null;

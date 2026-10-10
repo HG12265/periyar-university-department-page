@@ -201,8 +201,7 @@ export default function Navbar() {
   const [mobileActiveIdx, setMobileActiveIdx] = useState(null);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) return;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
     fetch(`${apiUrl}/settings`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {

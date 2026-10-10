@@ -33,7 +33,23 @@ const envSchema = z.object({
   UPLOAD_DIR: z.string().default('uploads'),
   
   // CORS & Security Allowed Origins
-  ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
+  ALLOWED_ORIGINS: z.preprocess((val) => {
+    const raw = typeof val === 'string' && val.trim() ? val : (process.env.CORS_ORIGIN || '');
+    const defaults = [
+      'http://localhost:3000',
+      'http://localhost:5000',
+      'https://periyaruniversity.ac.in',
+      'https://www.periyaruniversity.ac.in',
+      'http://periyaruniversity.ac.in',
+      'http://www.periyaruniversity.ac.in',
+    ];
+    if (!raw) return defaults.join(',');
+    const list = raw.split(',').map((s) => s.trim()).filter(Boolean);
+    defaults.forEach((d) => {
+      if (!list.includes(d)) list.push(d);
+    });
+    return list.join(',');
+  }, z.string()),
   
   // Default Administrative Credentials Seeding
   ENABLE_DEFAULT_ADMIN_SEED: z.preprocess(

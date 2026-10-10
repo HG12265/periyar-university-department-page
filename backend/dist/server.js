@@ -34,22 +34,62 @@ async function bootstrap() {
         app.use(pinoLogger_1.httpLogger); // Request/Response logger
         // CORS Setup
         const allowedOrigins = env_1.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim());
-        app.use((0, cors_1.default)({
+        const isAllowedOrigin = (origin) => {
+            if (!origin)
+                return true; // Allow non-browser requests (curl, server-to-server, scripts)
+            // 1. Local development
+            if (origin.startsWith('http://localhost:') ||
+                origin.startsWith('https://localhost:') ||
+                origin.startsWith('http://127.0.0.1:') ||
+                origin.startsWith('https://127.0.0.1:')) {
+                return true;
+            }
+            // 2. Periyar University domain and all subdomains (with and without www, http and https)
+            try {
+                const parsed = new URL(origin);
+                const host = parsed.hostname.toLowerCase();
+                if (host === 'periyaruniversity.ac.in' || host.endsWith('.periyaruniversity.ac.in')) {
+                    return true;
+                }
+            }
+            catch {
+                // Invalid URL string, fall back to explicit list
+            }
+            // 3. Explicitly configured allowed origins
+            if (allowedOrigins.indexOf(origin) !== -1) {
+                return true;
+            }
+            return false;
+        };
+        const corsOptions = {
             origin: (origin, callback) => {
-                // Allow requests with no origin (like mobile apps, curl, or local scripts)
-                if (!origin)
-                    return callback(null, true);
-                if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('http://localhost:')) {
+                if (isAllowedOrigin(origin)) {
                     callback(null, true);
                 }
                 else {
-                    callback(new Error('Blocked by CORS policy'));
+                    logger_1.logger.warn(`Blocked by CORS policy for origin: ${origin}`);
+                    callback(null, false);
                 }
             },
             credentials: true,
-            methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'Cache-Control', 'X-Requested-With', 'Pragma', 'Expires'],
-        }));
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+            allowedHeaders: [
+                'Content-Type',
+                'Authorization',
+                'X-CSRF-Token',
+                'Cache-Control',
+                'X-Requested-With',
+                'Pragma',
+                'Expires',
+                'Origin',
+                'Accept',
+                'x-request-id',
+            ],
+            exposedHeaders: ['Set-Cookie', 'X-CSRF-Token'],
+            optionsSuccessStatus: 200,
+        };
+        app.use((0, cors_1.default)(corsOptions));
+        app.options('*', (0, cors_1.default)(corsOptions));
         app.use((0, helmet_1.default)()); // Basic security headers
         app.use(securityHeaders_1.securityHeaders); // Custom security policies matching Python's CSP
         app.use((0, compression_1.default)()); // Compress text responses

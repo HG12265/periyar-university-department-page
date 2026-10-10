@@ -14,8 +14,9 @@ export const securityHeaders = (req: Request, res: Response, next: NextFunction)
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
 
-  // Relax security headers for static uploads so that PDFs and images can render and open correctly
-  if (req.path.includes('/uploads')) {
+  // Relax security headers for static uploads and API endpoints so that cross-domain/subdomain fetches can read responses correctly
+  const isApiOrUpload = req.path.includes('/uploads') || req.path.startsWith('/api') || req.path.includes('/api/') || req.path.includes('/dept/api');
+  if (isApiOrUpload) {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('Cross-Origin-Opener-Policy', 'unsafe-none');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
