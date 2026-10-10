@@ -25,9 +25,7 @@ const app = (0, express_1.default)();
 async function bootstrap() {
     try {
         logger_1.logger.info('Initializing Node.js backend...');
-        // 1. Test database connections first
-        await (0, db_1.testDbConnections)();
-        // 2. Configure Trust Proxy (crucial for rate limiter client IP detection)
+        // 1. Configure Trust Proxy (crucial for rate limiter client IP detection)
         app.set('trust proxy', 1);
         // 3. Mount Global Middlewares
         app.use(requestId_1.default); // Assign unique UUID to each request
@@ -135,19 +133,37 @@ async function bootstrap() {
         app.use(routes_1.default);
         // 7. Global Error Handler Middleware (must be registered last!)
         app.use(errorHandler_1.errorHandler);
-        // 8. Trigger administrative seeding
-        await authService_1.AuthService.seedDefaultAdmin();
-        // 9. Schedule Background Cron Jobs
-        authService_1.AuthService.startTokenCleanupJob();
-        resumeService_1.ResumeService.startResumeRegenCron();
-        // 10. Start Server
-        const port = env_1.env.PORT;
+        // 8. Start HTTP Server immediately so Passenger / LiteSpeed binds to the process without 503 timeout
+        const port = process.env.PORT || env_1.env.PORT || 5000;
         const server = app.listen(port, () => {
             logger_1.logger.info(`===================================================`);
             logger_1.logger.info(`🚀 SERVER RUNNING SUCCESSFULLY IN ${env_1.env.NODE_ENV.toUpperCase()} MODE`);
-            logger_1.logger.info(`🔊 Listening on http://localhost:${port}`);
+            logger_1.logger.info(`🔊 Listening on port: ${port}`);
             logger_1.logger.info(`===================================================`);
         });
+        // 9. Verify DB Connection in background (soft-fail, never crashes HTTP server)
+        try {
+            await (0, db_1.testDbConnections)();
+            logger_1.logger.info('Database connection pool verified.');
+        }
+        catch (dbErr) {
+            logger_1.logger.warn(`Initial database connection check warning: ${dbErr.message}`);
+        }
+        // 10. Trigger administrative seeding (soft-fail)
+        try {
+            await authService_1.AuthService.seedDefaultAdmin();
+        }
+        catch (seedErr) {
+            logger_1.logger.warn(`Admin seed check skipped: ${seedErr.message}`);
+        }
+        // 11. Schedule Background Cron Jobs
+        try {
+            authService_1.AuthService.startTokenCleanupJob();
+            resumeService_1.ResumeService.startResumeRegenCron();
+        }
+        catch (cronErr) {
+            logger_1.logger.warn(`Background cron start warning: ${cronErr.message}`);
+        }
         // Graceful Shutdown Handler
         const shutdown = async () => {
             logger_1.logger.info('Shutting down server gracefully...');

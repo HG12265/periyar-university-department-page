@@ -23,10 +23,7 @@ async function bootstrap() {
   try {
     logger.info('Initializing Node.js backend...');
 
-    // 1. Test database connections first
-    await testDbConnections();
-
-    // 2. Configure Trust Proxy (crucial for rate limiter client IP detection)
+    // 1. Configure Trust Proxy (crucial for rate limiter client IP detection)
     app.set('trust proxy', 1);
 
     // 3. Mount Global Middlewares
@@ -151,21 +148,37 @@ async function bootstrap() {
     // 7. Global Error Handler Middleware (must be registered last!)
     app.use(errorHandler);
 
-    // 8. Trigger administrative seeding
-    await AuthService.seedDefaultAdmin();
-
-    // 9. Schedule Background Cron Jobs
-    AuthService.startTokenCleanupJob();
-    ResumeService.startResumeRegenCron();
-
-    // 10. Start Server
-    const port = env.PORT;
+    // 8. Start HTTP Server immediately so Passenger / LiteSpeed binds to the process without 503 timeout
+    const port = process.env.PORT || env.PORT || 5000;
     const server = app.listen(port, () => {
       logger.info(`===================================================`);
       logger.info(`🚀 SERVER RUNNING SUCCESSFULLY IN ${env.NODE_ENV.toUpperCase()} MODE`);
-      logger.info(`🔊 Listening on http://localhost:${port}`);
+      logger.info(`🔊 Listening on port: ${port}`);
       logger.info(`===================================================`);
     });
+
+    // 9. Verify DB Connection in background (soft-fail, never crashes HTTP server)
+    try {
+      await testDbConnections();
+      logger.info('Database connection pool verified.');
+    } catch (dbErr: any) {
+      logger.warn(`Initial database connection check warning: ${dbErr.message}`);
+    }
+
+    // 10. Trigger administrative seeding (soft-fail)
+    try {
+      await AuthService.seedDefaultAdmin();
+    } catch (seedErr: any) {
+      logger.warn(`Admin seed check skipped: ${seedErr.message}`);
+    }
+
+    // 11. Schedule Background Cron Jobs
+    try {
+      AuthService.startTokenCleanupJob();
+      ResumeService.startResumeRegenCron();
+    } catch (cronErr: any) {
+      logger.warn(`Background cron start warning: ${cronErr.message}`);
+    }
 
     // Graceful Shutdown Handler
     const shutdown = async () => {

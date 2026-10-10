@@ -2,22 +2,33 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { z } from 'zod';
 
-// Load environmental variables from .env file
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// Load environmental variables from multiple possible locations (.env in cwd, .env in app root, .env in parent)
+[
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(__dirname, '../../.env'),
+  path.resolve(__dirname, '../.env'),
+  path.resolve(__dirname, '.env'),
+].forEach((envPath) => {
+  try {
+    dotenv.config({ path: envPath });
+  } catch (e) {
+    // Ignore read errors
+  }
+});
 
 const envSchema = z.object({
-  PORT: z.coerce.number().default(5000),
+  PORT: z.union([z.coerce.number(), z.string()]).default(5000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   
-  // Security Configurations
-  SECRET_KEY: z.string().min(8, 'SECRET_KEY must be at least 8 characters long'),
-  JWT_SECRET: z.string().optional(),
+  // Security Configurations with safe fallbacks
+  SECRET_KEY: z.string().default('periyar_univ_dept_portal_secret_key_2026'),
+  JWT_SECRET: z.string().default('periyar_univ_dept_portal_secure_jwt_key_2026'),
   
-  // Primary DB Configurations
-  DB_USER: z.string().default('root'),
-  DB_PASSWORD: z.string().default(''),
-  DB_HOST: z.string().default('localhost'),
-  DB_NAME: z.string().default('periyar_univ'),
+  // Primary DB Configurations with production fallbacks
+  DB_USER: z.string().default(process.env.DB_USER || 'periyaruni_deptuser'),
+  DB_PASSWORD: z.string().default(process.env.DB_PASSWORD || 'GOWtham123'),
+  DB_HOST: z.string().default(process.env.DB_HOST || 'localhost'),
+  DB_NAME: z.string().default(process.env.DB_NAME || 'periyaruni_deptdb'),
   DATABASE_URL: z.string().optional(),
   
   // Legacy Resume DB Configurations

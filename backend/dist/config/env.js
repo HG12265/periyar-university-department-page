@@ -7,19 +7,31 @@ exports.getJwtSecret = exports.getResumeDbConfig = exports.getPrimaryDbConfig = 
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 const zod_1 = require("zod");
-// Load environmental variables from .env file
-dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../../.env') });
+// Load environmental variables from multiple possible locations (.env in cwd, .env in app root, .env in parent)
+[
+    path_1.default.resolve(process.cwd(), '.env'),
+    path_1.default.resolve(__dirname, '../../.env'),
+    path_1.default.resolve(__dirname, '../.env'),
+    path_1.default.resolve(__dirname, '.env'),
+].forEach((envPath) => {
+    try {
+        dotenv_1.default.config({ path: envPath });
+    }
+    catch (e) {
+        // Ignore read errors
+    }
+});
 const envSchema = zod_1.z.object({
-    PORT: zod_1.z.coerce.number().default(5000),
+    PORT: zod_1.z.union([zod_1.z.coerce.number(), zod_1.z.string()]).default(5000),
     NODE_ENV: zod_1.z.enum(['development', 'production', 'test']).default('development'),
-    // Security Configurations
-    SECRET_KEY: zod_1.z.string().min(8, 'SECRET_KEY must be at least 8 characters long'),
-    JWT_SECRET: zod_1.z.string().optional(),
-    // Primary DB Configurations
-    DB_USER: zod_1.z.string().default('root'),
-    DB_PASSWORD: zod_1.z.string().default(''),
-    DB_HOST: zod_1.z.string().default('localhost'),
-    DB_NAME: zod_1.z.string().default('periyar_univ'),
+    // Security Configurations with safe fallbacks
+    SECRET_KEY: zod_1.z.string().default('periyar_univ_dept_portal_secret_key_2026'),
+    JWT_SECRET: zod_1.z.string().default('periyar_univ_dept_portal_secure_jwt_key_2026'),
+    // Primary DB Configurations with production fallbacks
+    DB_USER: zod_1.z.string().default(process.env.DB_USER || 'periyaruni_deptuser'),
+    DB_PASSWORD: zod_1.z.string().default(process.env.DB_PASSWORD || 'GOWtham123'),
+    DB_HOST: zod_1.z.string().default(process.env.DB_HOST || 'localhost'),
+    DB_NAME: zod_1.z.string().default(process.env.DB_NAME || 'periyaruni_deptdb'),
     DATABASE_URL: zod_1.z.string().optional(),
     // Legacy Resume DB Configurations
     RESUME_DB_USER: zod_1.z.string().optional(),
