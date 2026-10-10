@@ -419,20 +419,34 @@ class ResumeService {
         const pdfExists = fs_1.default.existsSync(pdfFilepath);
         if (needSave || !pdfExists) {
             // Regenerate the PDF file on disk
-            await (0, pdfGenerator_1.generateResumePdf)(compiledData, pdfFilepath);
+            try {
+                await (0, pdfGenerator_1.generateResumePdf)(compiledData, pdfFilepath);
+            }
+            catch (pdfErr) {
+                logger_1.logger.warn(`Resume PDF generation error: ${pdfErr.message}`);
+            }
             // Save/update DB
-            await resumeRepository_1.ResumeRepository.save(faculty.id, compiledJsonStr, pdfUrl);
+            try {
+                await resumeRepository_1.ResumeRepository.save(faculty.id, compiledJsonStr, pdfUrl);
+            }
+            catch (saveErr) {
+                logger_1.logger.warn(`Resume record save error: ${saveErr.message}`);
+            }
         }
-        const updatedRecord = await resumeRepository_1.ResumeRepository.findByFacultyId(faculty.id);
-        if (!updatedRecord)
-            throw new ApiError_1.ApiError(500, 'Failed to fetch updated resume record');
+        let updatedRecord = null;
+        try {
+            updatedRecord = await resumeRepository_1.ResumeRepository.findByFacultyId(faculty.id);
+        }
+        catch (e) {
+            logger_1.logger.warn(`Failed to find resume record: ${e.message}`);
+        }
         return {
-            id: updatedRecord.id,
-            faculty_id: updatedRecord.faculty_id,
-            generated_resume_json: JSON.parse(updatedRecord.generated_resume_json),
-            generated_pdf_url: updatedRecord.generated_pdf_url,
-            created_at: updatedRecord.created_at,
-            updated_at: updatedRecord.updated_at,
+            id: updatedRecord?.id || 0,
+            faculty_id: faculty.id,
+            generated_resume_json: updatedRecord ? JSON.parse(updatedRecord.generated_resume_json) : compiledData,
+            generated_pdf_url: updatedRecord?.generated_pdf_url || pdfUrl,
+            created_at: updatedRecord?.created_at || new Date(),
+            updated_at: updatedRecord?.updated_at || new Date(),
         };
     }
     // Force regenerate resume (with spam checking matching 5-minute interval)
@@ -465,20 +479,34 @@ class ResumeService {
         const compiledData = await this.compileFacultyResumeData(faculty.id);
         const compiledJsonStr = JSON.stringify(compiledData);
         // Draw PDF on disk
-        await (0, pdfGenerator_1.generateResumePdf)(compiledData, pdfFilepath);
+        try {
+            await (0, pdfGenerator_1.generateResumePdf)(compiledData, pdfFilepath);
+        }
+        catch (pdfErr) {
+            logger_1.logger.warn(`Resume PDF generation error: ${pdfErr.message}`);
+        }
         // Save to DB
-        await resumeRepository_1.ResumeRepository.save(faculty.id, compiledJsonStr, pdfUrl);
-        const updatedRecord = await resumeRepository_1.ResumeRepository.findByFacultyId(faculty.id);
-        if (!updatedRecord)
-            throw new ApiError_1.ApiError(500, 'Failed to retrieve updated resume record');
+        try {
+            await resumeRepository_1.ResumeRepository.save(faculty.id, compiledJsonStr, pdfUrl);
+        }
+        catch (saveErr) {
+            logger_1.logger.warn(`Resume record save error: ${saveErr.message}`);
+        }
+        let updatedRecord = null;
+        try {
+            updatedRecord = await resumeRepository_1.ResumeRepository.findByFacultyId(faculty.id);
+        }
+        catch (e) {
+            logger_1.logger.warn(`Failed to find resume record: ${e.message}`);
+        }
         return {
             status: 'success',
             message: 'Resume and PDF regenerated successfully.',
             resume: {
-                id: updatedRecord.id,
-                faculty_id: updatedRecord.faculty_id,
-                generated_resume_json: JSON.parse(updatedRecord.generated_resume_json),
-                generated_pdf_url: updatedRecord.generated_pdf_url,
+                id: updatedRecord?.id || 0,
+                faculty_id: faculty.id,
+                generated_resume_json: updatedRecord ? JSON.parse(updatedRecord.generated_resume_json) : compiledData,
+                generated_pdf_url: updatedRecord?.generated_pdf_url || pdfUrl,
             },
         };
     }

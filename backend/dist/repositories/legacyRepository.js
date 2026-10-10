@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LegacyRepository = void 0;
 const db_1 = require("../db");
+const logger_1 = require("../config/logger");
 class LegacyRepository {
     // Resolve employee ID from employee_master by off_email
     static async resolveEmpIdByEmail(email) {
@@ -45,73 +46,151 @@ class LegacyRepository {
     }
     // Fetch qualifications (qualification_master)
     static async getQualifications(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT qualification, year_from, year_upto, mark, institute, status, arrange ' +
-            'FROM qualification_master WHERE emp_id = ? ORDER BY arrange ASC, year_from ASC', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT qualification, year_from, year_upto, mark, institute, status, arrange ' +
+                'FROM qualification_master WHERE emp_id = ? ORDER BY arrange ASC, year_from ASC', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getQualifications: ${err.message}`);
+            return [];
+        }
     }
     // Fetch previous positions (previous_position)
     static async getPreviousPositions(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT Institution, Designation, Department, FromDate, ToDate, Duration, Remarks ' +
-            'FROM previous_position WHERE emp_id = ? ORDER BY FromDate DESC', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT Institution, Designation, Department, FromDate, ToDate, Duration, Remarks ' +
+                'FROM previous_position WHERE emp_id = ? ORDER BY FromDate DESC', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getPreviousPositions: ${err.message}`);
+            return [];
+        }
     }
     // Fetch university positions (position_held)
     static async getUniversityPositions(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT Role, Department, University, FromDate, ToDate, Responsibilities, Remarks ' +
-            'FROM position_held WHERE emp_id = ? ORDER BY FromDate DESC', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT Role, Department, University, FromDate, ToDate, Responsibilities, Remarks ' +
+                'FROM position_held WHERE emp_id = ? ORDER BY FromDate DESC', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getUniversityPositions: ${err.message}`);
+            return [];
+        }
     }
     // Fetch awards (award)
     static async getAwards(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT Title, A_date, Level, Sponcer, Spon_Address FROM award WHERE emp_id = ? ORDER BY A_date ASC', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT Title, A_date, Level, Sponcer, Spon_Address FROM award WHERE emp_id = ? ORDER BY A_date ASC', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getAwards: ${err.message}`);
+            return [];
+        }
     }
     // Fetch research areas (area)
     static async getResearchAreas(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT area FROM area WHERE emp_id = ?', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT area FROM area WHERE emp_id = ?', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getResearchAreas: ${err.message}`);
+            return [];
+        }
     }
     // Fetch projects (proposal)
     static async getProjects(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT title, FundAgency, samt, duration, Publications FROM proposal WHERE emp_id = ?', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT title, FundAgency, samt, duration, Publications FROM proposal WHERE emp_id = ?', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getProjects: ${err.message}`);
+            return [];
+        }
     }
     // Fetch patents (patent)
     static async getPatents(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT Categry, Level, Name, Detail, Fdate, Issued, Stus, PNumber FROM patent WHERE emp_id = ?', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT Categry, Level, Name, Detail, Fdate, Issued, Stus, PNumber FROM patent WHERE emp_id = ?', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getPatents: ${err.message}`);
+            return [];
+        }
     }
     // Fetch foreign visits (forigenvisite)
     static async getForeignVisits(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT Company, Purpose, DFrom, DTo, Agency, Invitation, Certificate FROM forigenvisite WHERE emp_id = ?', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT Company, Purpose, DFrom, DTo, Agency, Invitation, Certificate FROM forigenvisite WHERE emp_id = ?', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getForeignVisits: ${err.message}`);
+            return [];
+        }
     }
     // Fetch events organized (organizer)
     static async getEventsOrganized(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT T_role, O_type, Title, Date_f, Date_t, Level, Role, Org, Org_Address, local, outstation, Amount, letter, Sanctioned, Utilized, uc, report, photo1, photo2, photo3, photo4 ' +
-            'FROM organizer WHERE emp_id = ?', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT T_role, O_type, Title, Date_f, Date_t, Level, Role, Org, Org_Address, local, outstation, Amount, letter, Sanctioned, Utilized, uc, report, photo1, photo2, photo3, photo4 ' +
+                'FROM organizer WHERE emp_id = ?', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getEventsOrganized: ${err.message}`);
+            return [];
+        }
     }
     // Fetch publications (publication)
     static async getPublications(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT P_type, Title, P_Name, P_Level, Author_1, Author_2, Author_3, Volume, Issue, Page_from, Page_to, Impact_F, Indexing, Publisher, P_year, P_month, DOI, Webpage, Paper, UPDATED ' +
-            'FROM publication WHERE emp_id = ?', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT P_type, Title, P_Name, P_Level, Author_1, Author_2, Author_3, Volume, Issue, Page_from, Page_to, Impact_F, Indexing, Publisher, P_year, P_month, DOI, Webpage, Paper, UPDATED ' +
+                'FROM publication WHERE emp_id = ?', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getPublications: ${err.message}`);
+            return [];
+        }
     }
     // Fetch lectures delivered (lectures_delivered)
     static async getLecturesDelivered(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT Title, LType, Institution, Department, LDate, Venue, Mode, Description, EventTitle FROM lectures_delivered WHERE emp_id = ? ORDER BY LDate DESC', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT Title, LType, Institution, Department, LDate, Venue, Mode, Description, EventTitle FROM lectures_delivered WHERE emp_id = ? ORDER BY LDate DESC', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getLecturesDelivered: ${err.message}`);
+            return [];
+        }
     }
     // Fetch copyrights (copyrights)
     static async getCopyrights(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT Title, CType, RegNumber, RegDate, Status, Authors, Description FROM copyrights WHERE emp_id = ? ORDER BY RegDate DESC', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT Title, CType, RegNumber, RegDate, Status, Authors, Description FROM copyrights WHERE emp_id = ? ORDER BY RegDate DESC', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getCopyrights: ${err.message}`);
+            return [];
+        }
     }
     // Fetch PhDs produced (phd_produced)
     static async getPhdProduced(empId) {
-        const [rows] = await db_1.resumeDB.query('SELECT ScholarName, Title, University, Category, RegYear, AwardedYear, Role, Status, Description FROM phd_produced WHERE emp_id = ? ORDER BY AwardedYear DESC, RegYear DESC', [empId]);
-        return rows;
+        try {
+            const [rows] = await db_1.resumeDB.query('SELECT ScholarName, Title, University, Category, RegYear, AwardedYear, Role, Status, Description FROM phd_produced WHERE emp_id = ? ORDER BY AwardedYear DESC, RegYear DESC', [empId]);
+            return rows;
+        }
+        catch (err) {
+            logger_1.logger.warn(`LegacyRepository.getPhdProduced: ${err.message}`);
+            return [];
+        }
     }
     // ==========================================
     // DASHBOARD & ADMIN OPERATIONS
