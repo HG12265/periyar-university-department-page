@@ -93,7 +93,6 @@ async function bootstrap() {
     };
 
     app.use(cors(corsOptions));
-    app.options('*', cors(corsOptions));
 
     app.use(helmet()); // Basic security headers
     app.use(securityHeaders); // Custom security policies matching Python's CSP

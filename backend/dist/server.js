@@ -87,7 +87,6 @@ async function bootstrap() {
             optionsSuccessStatus: 200,
         };
         app.use((0, cors_1.default)(corsOptions));
-        app.options('*', (0, cors_1.default)(corsOptions));
         app.use((0, helmet_1.default)()); // Basic security headers
         app.use(securityHeaders_1.securityHeaders); // Custom security policies matching Python's CSP
         app.use((0, compression_1.default)()); // Compress text responses
