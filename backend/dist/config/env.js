@@ -81,8 +81,18 @@ const getPrimaryDbConfig = () => {
     if (exports.env.DATABASE_URL) {
         return exports.env.DATABASE_URL;
     }
-    const encodedPassword = encodeURIComponent(exports.env.DB_PASSWORD);
-    return `mysql://${exports.env.DB_USER}:${encodedPassword}@${exports.env.DB_HOST}/${exports.env.DB_NAME}?charset=utf8mb4`;
+    return {
+        host: exports.env.DB_HOST,
+        port: Number(process.env.DB_PORT || 3306),
+        user: exports.env.DB_USER,
+        password: exports.env.DB_PASSWORD,
+        database: exports.env.DB_NAME,
+        waitForConnections: true,
+        connectionLimit: 15,
+        queueLimit: 0,
+        connectTimeout: 8000,
+        charset: 'utf8mb4',
+    };
 };
 exports.getPrimaryDbConfig = getPrimaryDbConfig;
 // Resolve Resume DB Connection Config
@@ -93,10 +103,20 @@ const getResumeDbConfig = () => {
     const user = exports.env.RESUME_DB_USER || exports.env.DB_USER;
     const password = exports.env.RESUME_DB_PASSWORD !== undefined ? exports.env.RESUME_DB_PASSWORD : exports.env.DB_PASSWORD;
     const host = exports.env.RESUME_DB_HOST || exports.env.DB_HOST;
-    const port = exports.env.RESUME_DB_PORT;
+    const port = Number(exports.env.RESUME_DB_PORT || 3306);
     const dbName = exports.env.RESUME_DB_NAME || exports.env.DB_NAME;
-    const encodedPassword = encodeURIComponent(password);
-    return `mysql://${user}:${encodedPassword}@${host}:${port}/${dbName}?charset=utf8mb4`;
+    return {
+        host,
+        port,
+        user,
+        password,
+        database: dbName,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        connectTimeout: 8000,
+        charset: 'utf8mb4',
+    };
 };
 exports.getResumeDbConfig = getResumeDbConfig;
 // Resolve JWT Secret Key
