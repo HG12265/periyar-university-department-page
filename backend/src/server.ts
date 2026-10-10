@@ -15,7 +15,7 @@ import requestId from './middleware/requestId';
 import apiRouter from './routes';
 import { AuthService } from './services/authService';
 import { ResumeService } from './services/resumeService';
-import { testDbConnections, closeDbPools, primaryDB, resumeDB } from './db';
+import { testDbConnections, closeDbPools, primaryDB, resumeDB, resumePool, getResumeDbStatus } from './db';
 
 const app = express();
 
@@ -113,28 +113,44 @@ async function bootstrap() {
     // Health Check Endpoint
     app.get(['/health', '/backend/health', '/api/health', '/backend/api/health'], async (req, res) => {
       let primaryStatus = 'connected';
-      let resumeStatus = 'connected';
+      let availableDatabases: string[] = [];
+      const resumeTableCounts: Record<string, number> = {};
 
       try {
         const conn = await primaryDB.getConnection();
+        try {
+          const [dbs]: any = await conn.query('SHOW DATABASES');
+          availableDatabases = dbs.map((d: any) => Object.values(d)[0]);
+        } catch (e) {}
+
+        try {
+          const [tables]: any = await conn.query('SHOW TABLES');
+          const tableList = tables.map((t: any) => Object.values(t)[0]);
+          const checkTables = ['qualification_master', 'publication', 'experience_master', 'award', 'employee_master'];
+          for (const tbl of checkTables) {
+            if (tableList.includes(tbl)) {
+              const [cntRows]: any = await conn.query(`SELECT COUNT(*) as cnt FROM \`${tbl}\``);
+              resumeTableCounts[tbl] = cntRows[0]?.cnt || 0;
+            }
+          }
+        } catch (e) {}
+
         conn.release();
       } catch (err) {
         primaryStatus = 'disconnected';
       }
 
-      try {
-        const conn = await resumeDB.getConnection();
-        conn.release();
-      } catch (err) {
-        resumeStatus = 'disconnected';
-      }
-
+      const resumeInfo = getResumeDbStatus();
+      const resumeStatus = resumeInfo.isAlive ? 'connected' : 'disconnected';
       const allOk = primaryStatus === 'connected';
       
       res.status(allOk ? 200 : 503).json({
         status: allOk ? 'ok' : 'error',
         database: primaryStatus,
         resumeDB: resumeStatus,
+        resumeDBDetails: resumeInfo,
+        availableDatabases,
+        primaryResumeTables: resumeTableCounts,
         uptime: Math.floor(process.uptime()),
         version: '1.0.0',
         timestamp: new Date().toISOString(),

@@ -121,7 +121,7 @@ export const getResumeDbConfig = (): any => {
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    connectTimeout: 8000,
+    connectTimeout: 2500,
     charset: 'utf8mb4',
   };
 };
