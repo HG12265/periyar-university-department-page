@@ -98,8 +98,8 @@ async function bootstrap() {
     app.use(securityHeaders); // Custom security policies matching Python's CSP
     app.use(compression()); // Compress text responses
     app.use(cookieParser()); // Cookie parsing support
-    app.use(express.json({ limit: '10mb' })); // Parse incoming JSON request body
-    app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Parse URL-encoded body
+    app.use(express.json({ limit: '100mb' })); // Parse incoming JSON request body up to 100mb
+    app.use(express.urlencoded({ extended: true, limit: '100mb' })); // Parse URL-encoded body up to 100mb
     app.use(hpp()); // Avoid HTTP Parameter Pollution attacks
 
     // 4. Global Rate Limiter

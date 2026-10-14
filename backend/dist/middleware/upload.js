@@ -16,7 +16,7 @@ const storage = multer_1.default.memoryStorage();
 exports.upload = (0, multer_1.default)({
     storage,
     limits: {
-        fileSize: 10 * 1024 * 1024, // Strict 10MB limit
+        fileSize: 100 * 1024 * 1024, // 100MB limit for syllabus and department assets
     },
 });
 // Magic Byte Signatures Map

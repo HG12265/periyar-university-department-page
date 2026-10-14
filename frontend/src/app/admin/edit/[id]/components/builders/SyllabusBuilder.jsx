@@ -204,6 +204,11 @@ export default function SyllabusBuilder() {
       newErrors.file = 'PDF file is required';
     } else if (editingIndex !== null && !syllabusFormData.file && !existingFileUrl) {
       newErrors.file = 'PDF file is required';
+    } else if (syllabusFormData.file && syllabusFormData.file.size > 100 * 1024 * 1024) {
+      newErrors.file = 'File exceeds 100MB limit';
+      setErrors(newErrors);
+      alert('⚠️ Selected PDF file is too large! Maximum allowed size is 100MB.');
+      return;
     }
     
     if (Object.keys(newErrors).length > 0) {
@@ -327,7 +332,7 @@ export default function SyllabusBuilder() {
           )}
         </div>
         <div className="w-full md:w-64">
-          <label className="text-[10px] text-gray-500 font-bold block mb-2 uppercase tracking-widest">Syllabus PDF File</label>
+          <label className="text-[10px] text-gray-500 font-bold block mb-2 uppercase tracking-widest">Syllabus PDF File (Max 100MB)</label>
           <div className="flex gap-2">
             <input
               type="file"

@@ -16,6 +16,14 @@ export const errorHandler = (
     });
   }
 
+  // Handle Multer file size limit gracefully
+  if ((err as any).code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({
+      success: false,
+      message: 'File size exceeds the allowed limit (100MB maximum).',
+    });
+  }
+
   // Log unexpected / system errors using Pino
   logger.error({
     msg: 'Unhandled internal server error',

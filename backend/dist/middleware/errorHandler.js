@@ -11,6 +11,13 @@ const errorHandler = (err, req, res, next) => {
             errors: err.errors || undefined,
         });
     }
+    // Handle Multer file size limit gracefully
+    if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+            success: false,
+            message: 'File size exceeds the allowed limit (100MB maximum).',
+        });
+    }
     // Log unexpected / system errors using Pino
     logger_1.logger.error({
         msg: 'Unhandled internal server error',
