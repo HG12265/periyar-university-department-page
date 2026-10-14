@@ -88,8 +88,8 @@ export const alumniTableSaveSchema = z.object({
   columns: z.array(z.any()).default([]),
   rows: z.array(z.any()).default([]),
   meeting_title: z.string().optional().nullable(),
-  meeting_images: z.array(z.string()).optional().nullable(),
-});
+  meeting_images: z.any().optional().nullable(),
+}).passthrough();
 
 export const placementTableSaveSchema = alumniTableSaveSchema;
 

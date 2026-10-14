@@ -83,8 +83,8 @@ exports.alumniTableSaveSchema = zod_1.z.object({
     columns: zod_1.z.array(zod_1.z.any()).default([]),
     rows: zod_1.z.array(zod_1.z.any()).default([]),
     meeting_title: zod_1.z.string().optional().nullable(),
-    meeting_images: zod_1.z.array(zod_1.z.string()).optional().nullable(),
-});
+    meeting_images: zod_1.z.any().optional().nullable(),
+}).passthrough();
 exports.placementTableSaveSchema = exports.alumniTableSaveSchema;
 const facilityBaseSchema = zod_1.z.object({
     dept_id: zod_1.z.coerce.number().int().positive('dept_id must be a positive integer'),
