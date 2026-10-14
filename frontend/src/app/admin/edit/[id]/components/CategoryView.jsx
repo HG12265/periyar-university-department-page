@@ -67,6 +67,7 @@ export default function CategoryView() {
       handleOpenSpecializedManager('facilities');
       return;
     }
+    const isHomeSlug = activeCategory.slug === 'home' || activeCategory.slug === '#home';
     setActiveSection({ section_title: activeCategory.name, content: '' });
     setOriginalRawContent('');
     setShowTemplateBuilder(false);
@@ -74,7 +75,9 @@ export default function CategoryView() {
     setActiveBuilderTab('table');
     setActivityTableTitle('');
     setActivityCustomTableData({
-      headers: ['S.No', 'Date', 'Activity Title', 'Description', 'Details'],
+      headers: isHomeSlug 
+        ? ['S.No', 'Title / Particulars', 'Description', 'Details (File)'] 
+        : ['S.No', 'Date', 'Activity Title', 'Description', 'Details'],
       rows: []
     });
     setTableMode('custom');
@@ -94,6 +97,7 @@ export default function CategoryView() {
       activeCategory.slug === 'visiting-faculty' ||
       activeCategory.slug === 'alumni';
     const isPdfSlug = activeCategory.slug === 'pdf' || isAffidavitLikeSlug;
+    const isHomeSlug = activeCategory.slug === 'home' || activeCategory.slug === '#home';
 
     if (activeCategory.slug === 'activities' && sec.content?.startsWith('[SECTION_GALLERY]')) {
       let evts = [];
@@ -108,7 +112,7 @@ export default function CategoryView() {
       setIsActivitiesTableInserted(false);
       setShowTemplateBuilder(true);
     } else if (
-      (activeCategory.slug === 'activities' || activeCategory.slug === 'projects' || isPdfSlug) &&
+      (activeCategory.slug === 'activities' || activeCategory.slug === 'projects' || isPdfSlug || isHomeSlug) &&
       sec.content &&
       sec.content.includes('<table')
     ) {
@@ -136,7 +140,9 @@ export default function CategoryView() {
       setActiveBuilderTab('table');
       setActivityTableTitle('');
       setActivityCustomTableData({
-        headers: ['S.No', 'Date', 'Activity Title', 'Description', 'Details'],
+        headers: isHomeSlug 
+          ? ['S.No', 'Title / Particulars', 'Description', 'Details (File)'] 
+          : ['S.No', 'Date', 'Activity Title', 'Description', 'Details'],
         rows: []
       });
       setTableMode('custom');

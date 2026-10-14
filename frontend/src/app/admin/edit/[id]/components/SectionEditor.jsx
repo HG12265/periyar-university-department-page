@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useEditDepartment } from './EditDepartmentContext';
 
@@ -38,7 +38,9 @@ export default function SectionEditor() {
     setActiveSection,
     setView,
     originalRawContent,
+    activityCustomTableData,
     setActivityCustomTableData,
+    activityTableTitle,
     setActivityTableTitle,
     setIsActivitiesTableInserted,
     setActiveBuilderTab,
@@ -52,26 +54,38 @@ export default function SectionEditor() {
     setTableMode
   } = useEditDepartment();
 
+  const isAffidavitLikeSlug = 
+    activeCategory?.slug === '#affidavit' || activeCategory?.slug === 'affidavit' ||
+    activeCategory?.slug === '#aicte' || activeCategory?.slug === 'aicte' ||
+    activeCategory?.slug === '#visting-professor' || activeCategory?.slug === 'visting-professor' ||
+    activeCategory?.slug === 'visiting-faculty' ||
+    activeCategory?.slug === 'alumni';
+  const isPdfSlug = activeCategory?.slug === 'pdf' || isAffidavitLikeSlug;
+  const isHomeCategory = activeCategory?.slug === 'home' || activeCategory?.slug === '#home';
+  const isBuilderCategory = 
+    activeCategory?.slug === 'syllabus' || 
+    activeCategory?.slug === 'programmes' || 
+    activeCategory?.slug === 'ugc-mrp' || 
+    activeCategory?.slug === 'journal' || 
+    activeCategory?.slug === 'conference' || 
+    activeCategory?.slug === 'activities' || 
+    activeCategory?.slug === 'projects' || 
+    isPdfSlug ||
+    isHomeCategory;
+
+  const [showHomeTableBuilder, setShowHomeTableBuilder] = useState(
+    isActivitiesTableInserted || Boolean(originalRawContent && originalRawContent.includes('<table'))
+  );
+
+  useEffect(() => {
+    if (isActivitiesTableInserted) {
+      setShowHomeTableBuilder(true);
+    }
+  }, [isActivitiesTableInserted]);
+
   if (!activeCategory || !activeSection) {
     return <div className="p-8 text-center text-red-500 font-bold">No active section loaded</div>;
   }
-
-  const isAffidavitLikeSlug = 
-    activeCategory.slug === '#affidavit' || activeCategory.slug === 'affidavit' ||
-    activeCategory.slug === '#aicte' || activeCategory.slug === 'aicte' ||
-    activeCategory.slug === '#visting-professor' || activeCategory.slug === 'visting-professor' ||
-    activeCategory.slug === 'visiting-faculty' ||
-    activeCategory.slug === 'alumni';
-  const isPdfSlug = activeCategory.slug === 'pdf' || isAffidavitLikeSlug;
-  const isBuilderCategory = 
-    activeCategory.slug === 'syllabus' || 
-    activeCategory.slug === 'programmes' || 
-    activeCategory.slug === 'ugc-mrp' || 
-    activeCategory.slug === 'journal' || 
-    activeCategory.slug === 'conference' || 
-    activeCategory.slug === 'activities' || 
-    activeCategory.slug === 'projects' || 
-    isPdfSlug;
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-150 overflow-hidden animate-in zoom-in-95 duration-300">
@@ -83,7 +97,10 @@ export default function SectionEditor() {
           ← Back to {activeCategory.name}
         </button>
         <div className="flex gap-2">
-          <button onClick={handleSaveSection} className="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-blue-700 transition cursor-pointer border-none shadow-md">
+          <button 
+            onClick={isActivitiesTableInserted ? handleFinishActivitiesTable : handleSaveSection} 
+            className="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-blue-700 transition cursor-pointer border-none shadow-md"
+          >
             {activeSection.id ? 'Update Section' : 'Create Section'}
           </button>
         </div>
@@ -111,6 +128,55 @@ export default function SectionEditor() {
             {activeCategory.slug === 'journal' && <JournalBuilder />}
             {activeCategory.slug === 'conference' && <ConferenceBuilder />}
             {(activeCategory.slug === 'activities' || activeCategory.slug === 'projects' || isPdfSlug) && <ActivitiesTableBuilder />}
+
+            {isHomeCategory && (
+              <div className="w-full mb-6">
+                <div className="flex items-center justify-between bg-gradient-to-r from-amber-50 to-orange-50/50 p-4 rounded-2xl border border-amber-200/80 shadow-sm flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl p-2 bg-white rounded-xl shadow-xs border border-amber-200">📊</span>
+                    <div>
+                      <h4 className="text-sm font-bold text-amber-900 m-0">Dynamic Table Session Builder</h4>
+                      <p className="text-xs text-amber-700/80 m-0 mt-0.5">Design custom table header columns, upload attachments/PDFs, and edit rows with the visual spreadsheet builder for this Home section.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextState = !showHomeTableBuilder;
+                        setShowHomeTableBuilder(nextState);
+                        if (nextState) {
+                          setShowTemplateBuilder(true);
+                          setActiveBuilderTab('table');
+                          if (activeSection?.section_title && !activityTableTitle) {
+                            setActivityTableTitle(activeSection.section_title);
+                          }
+                          if (!activityCustomTableData?.headers || activityCustomTableData.headers.length === 0) {
+                            setActivityCustomTableData({
+                              headers: ['S.No', 'Title / Particulars', 'Description', 'Details (File)'],
+                              rows: []
+                            });
+                          }
+                        }
+                      }}
+                      className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer border-none shadow-sm flex items-center gap-2 ${
+                        showHomeTableBuilder || isActivitiesTableInserted
+                          ? 'bg-amber-600 hover:bg-amber-700 text-white shadow-md active:scale-95'
+                          : 'bg-white hover:bg-amber-100/70 text-amber-800 border border-amber-300'
+                      }`}
+                    >
+                      {showHomeTableBuilder || isActivitiesTableInserted ? '✓ Table Builder Active' : '⚡ Enable Dynamic Table Builder'}
+                    </button>
+                  </div>
+                </div>
+
+                {(showHomeTableBuilder || isActivitiesTableInserted) && (
+                  <div className="mt-4 animate-in fade-in zoom-in-95 duration-200">
+                    <ActivitiesTableBuilder />
+                  </div>
+                )}
+              </div>
+            )}
             
             {!isBuilderCategory && (
               <>
@@ -164,7 +230,7 @@ export default function SectionEditor() {
                 )}
               </div>
             </div>
-          ) : ((activeCategory.slug === 'activities' && showTemplateBuilder) || activeCategory.slug === 'projects' || isPdfSlug) && activeBuilderTab === 'table' && isActivitiesTableInserted ? (
+          ) : ((activeCategory.slug === 'activities' && showTemplateBuilder) || activeCategory.slug === 'projects' || isPdfSlug || (isHomeCategory && (showHomeTableBuilder || isActivitiesTableInserted))) && activeBuilderTab === 'table' && isActivitiesTableInserted ? (
             <div id="main-table-editor-container" className="bg-white rounded-2xl border-2 border-amber-100 p-6 space-y-6 shadow-md animate-in zoom-in-95 duration-300">
               {/* Spreadsheet spreadsheet rows/actions managed by ActivitiesTableBuilder itself */}
               <div className="flex justify-between items-center pb-3 border-b border-gray-150 flex-wrap gap-4">
@@ -172,7 +238,7 @@ export default function SectionEditor() {
                   <h3 className="text-base font-bold text-amber-800 m-0">📝 Main Table Editor</h3>
                   <p className="text-[11px] text-gray-400 mt-1">Directly fill out dynamic cell contents, add/delete individual rows, and save to database.</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <button
                     type="button"
                     onClick={() => {
@@ -192,6 +258,17 @@ export default function SectionEditor() {
                   >
                     💾 Save & Publish Table
                   </button>
+                  {isHomeCategory && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsActivitiesTableInserted(false);
+                      }}
+                      className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold border-none cursor-pointer shadow-sm transition active:scale-95 flex items-center gap-1.5"
+                    >
+                      📝 Switch to Text Editor
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -237,7 +314,7 @@ export default function SectionEditor() {
                 }
               ` }} />
 
-              {(activeCategory.slug === 'activities' || activeCategory.slug === 'projects') && originalRawContent && originalRawContent.includes('<table') && (
+              {(activeCategory.slug === 'activities' || activeCategory.slug === 'projects' || isHomeCategory) && originalRawContent && originalRawContent.includes('<table') && (
                 <div className="p-5 bg-gradient-to-r from-amber-50 to-amber-100/50 rounded-2xl border border-amber-250/30 flex justify-between items-center flex-wrap gap-4 shadow-sm animate-in slide-in-from-top-4 duration-300">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl filter drop-shadow">📊</span>
@@ -260,6 +337,7 @@ export default function SectionEditor() {
                         }
                         setIsActivitiesTableInserted(true);
                         setShowTemplateBuilder(true);
+                        setShowHomeTableBuilder(true);
                         setActiveBuilderTab('table');
                         alert("✓ Successfully loaded the pushed table back into the Visual Spreadsheet Editor! Please adjust columns or rows below.");
                       } else {
@@ -281,7 +359,7 @@ export default function SectionEditor() {
         {/* Bottom Save & Cancel Panel */}
         <div className="flex gap-4 p-5 bg-gray-50 border-t border-gray-100 justify-end rounded-b-2xl">
           <button
-            onClick={handleSaveSection}
+            onClick={isActivitiesTableInserted ? handleFinishActivitiesTable : handleSaveSection}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition cursor-pointer border-none shadow-md font-sans text-sm"
           >
             {activeSection.id ? 'Save Changes & Finish' : 'Create Section & Finish'}

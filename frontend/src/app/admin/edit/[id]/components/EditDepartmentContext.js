@@ -1721,18 +1721,27 @@ export function EditDepartmentProvider({ children }) {
   };
 
   const handleFinishActivitiesTable = async () => {
-    if (!activityTableTitle?.trim() ||
+    const isHome = activeCategory?.slug === 'home' || activeCategory?.slug === '#home';
+    const effectiveTableTitle = activityTableTitle?.trim() || activeSection?.section_title?.trim() || '';
+
+    if (!effectiveTableTitle) {
+      alert("Please enter a Section Title or Table Heading before saving.");
+      return;
+    }
+
+    if (
       activityCustomTableData.headers.length === 0 ||
       activityCustomTableData.rows.length === 0 ||
-      activityCustomTableData.rows.some(row => row.some(cell => !cell?.trim()))) {
-      alert("Please ensure all table headers and cells are filled before completing.");
+      activityCustomTableData.rows.some(row => row.every(cell => !cell?.trim()))
+    ) {
+      alert("Please ensure all table headers and at least one cell per row are filled before completing.");
       return;
     }
 
     // Compile dynamic custom table data into university styled responsive HTML
     let tableHtml = '';
-    if (activityTableTitle) {
-      tableHtml += `<h3 style="color: #333; font-size: 20px; font-weight: bold; margin-top: 30px; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #990033; padding-bottom: 8px; font-family: Arial, sans-serif;">${activityTableTitle}</h3>`;
+    if (effectiveTableTitle) {
+      tableHtml += `<h3 style="color: #333; font-size: 20px; font-weight: bold; margin-top: 30px; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid #990033; padding-bottom: 8px; font-family: Arial, sans-serif;">${effectiveTableTitle}</h3>`;
     }
     tableHtml += `<table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-family: Arial, sans-serif; border: 1px solid #dee2e6; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">`;
     
@@ -1776,7 +1785,7 @@ export function EditDepartmentProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dept_id: parseInt(id),
-          title: activeSection.section_title || 'Activities Table',
+          title: activeSection.section_title?.trim() || effectiveTableTitle || (isHome ? 'Home Table' : 'Activities Table'),
           category: activeCategory.slug,
           content: finalContent
         })

@@ -92,13 +92,22 @@ export default function ActivitiesTableBuilder({ spreadsheetViewOnly = false } =
     activeCategory?.slug === 'alumni';
 
   let targetFolder = 'activities';
+  const isHomeCategory = activeCategory?.slug === 'home' || activeCategory?.slug === '#home';
   if (activeCategory?.slug === 'alumni') {
     targetFolder = 'alumni';
   } else if (activeCategory?.slug === 'visiting-faculty' || activeCategory?.slug === '#visting-professor' || activeCategory?.slug === 'visting-professor') {
     targetFolder = 'faculties';
   } else if (activeCategory?.slug === 'aicte' || activeCategory?.slug === '#aicte' || activeCategory?.slug === 'affidavit' || activeCategory?.slug === '#affidavit') {
     targetFolder = 'syllabus';
+  } else if (isHomeCategory) {
+    targetFolder = 'activities';
   }
+
+  React.useEffect(() => {
+    if (!activityTableTitle && activeSection?.section_title) {
+      setActivityTableTitle(activeSection.section_title);
+    }
+  }, [activeSection?.section_title]);
 
   React.useEffect(() => {
     if (isAffidavitSlug && activeSection?.content) {
@@ -677,7 +686,7 @@ export default function ActivitiesTableBuilder({ spreadsheetViewOnly = false } =
       )}
 
       {/* Tab 1: Table-based Session */}
-      {((activeBuilderTab === 'table' || activeCategory?.slug === 'projects' || activeCategory?.slug === 'pdf') && !isAffidavitSlug) && (
+      {((activeBuilderTab === 'table' || activeCategory?.slug === 'projects' || activeCategory?.slug === 'pdf' || isHomeCategory) && !isAffidavitSlug) && (
         <div className="flex flex-col gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200/50 pb-4">
             <div>
