@@ -42,10 +42,30 @@ const nextConfig = {
     const destination = isProd
       ? 'https://www.periyaruniversity.ac.in/api/:path*'
       : 'http://localhost:5000/api/:path*';
+    const uploadsDestination = isProd
+      ? 'https://www.periyaruniversity.ac.in/uploads/:path*'
+      : 'http://localhost:5000/uploads/:path*';
     return [
       {
         source: '/api/:path*',
         destination: destination,
+      },
+      {
+        source: '/uploads/:path*',
+        destination: uploadsDestination,
+      },
+      // Local dev fallback for assets requested under /dept/
+      {
+        source: '/dept/:file.:ext',
+        destination: '/:file.:ext',
+      },
+      {
+        source: '/dept/fonts/:path*',
+        destination: '/fonts/:path*',
+      },
+      {
+        source: '/dept/js/:path*',
+        destination: '/js/:path*',
       },
     ];
   },
