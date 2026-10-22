@@ -21,7 +21,8 @@ export default function CategoryView() {
     handleOpenSpecializedManager,
     handleMoveSection,
     setTableMode,
-    setSectionGalleryEvents
+    setSectionGalleryEvents,
+    fetchStudentProjectsSection
   } = useEditDepartment();
 
   const [sectionToDelete, setSectionToDelete] = useState(null);
@@ -112,7 +113,7 @@ export default function CategoryView() {
       setIsActivitiesTableInserted(false);
       setShowTemplateBuilder(true);
     } else if (
-      (activeCategory.slug === 'activities' || activeCategory.slug === 'projects' || isPdfSlug || isHomeSlug) &&
+      (activeCategory.slug === 'activities' || activeCategory.slug === 'projects' || activeCategory.slug === 'student-project' || isPdfSlug || isHomeSlug) &&
       sec.content &&
       sec.content.includes('<table')
     ) {
@@ -159,6 +160,7 @@ export default function CategoryView() {
         {(!hasCustomManager(activeCategory.slug) ||
           activeCategory.slug === 'facilities' ||
           activeCategory.slug === 'activities' ||
+          activeCategory.slug === 'student-project' ||
           !dept?.sections?.some(s => s.category === activeCategory.slug)) && (
             <button
               onClick={handleAddNewSection}
@@ -172,22 +174,24 @@ export default function CategoryView() {
       {(hasCustomManager(activeCategory.slug) || activeCategory.slug === 'activities') && activeCategory.slug !== 'facilities' && (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50/50 p-5 rounded-2xl border border-blue-200/50 flex justify-between items-center flex-wrap gap-4 shadow-sm animate-in slide-in-from-top-4 duration-300">
           <div className="flex items-center gap-3">
-            <span className="text-2xl filter drop-shadow">💼</span>
+            <span className="text-2xl filter drop-shadow">{activeCategory.slug === 'activities' ? '⚡' : '💼'}</span>
             <div>
-              <span className="text-sm font-bold text-blue-900 block">Specialized Manager Available!</span>
+              <span className="text-sm font-bold text-blue-900 block">
+                {activeCategory.slug === 'activities' ? 'Activities Photo Gallery Manager' : 'Specialized Manager Available!'}
+              </span>
               <span className="text-xs text-blue-700/90 block mt-0.5">
                 {activeCategory.slug === 'activities'
-                  ? 'Manage the legacy global gallery events (Programmes, Achievements, Activities) or delete old items.'
+                  ? 'Add and manage event photographs that display directly on the department Activities page.'
                   : `You can manage ${activeCategory.name} using profiles, cards, spreadsheet documents, or attachments.`}
               </span>
             </div>
           </div>
           <button
             type="button"
-            onClick={() => handleOpenSpecializedManager(activeCategory.slug === 'activities' ? 'gallery' : activeCategory.slug)}
+            onClick={() => handleOpenSpecializedManager(activeCategory.slug === 'activities' ? 'activities' : activeCategory.slug)}
             className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold border-none cursor-pointer shadow-md transition"
           >
-            {activeCategory.slug === 'activities' ? 'Open Global Gallery Manager' : 'Open Specialized Manager'}
+            {activeCategory.slug === 'activities' ? '⚡ Open Activities Photos Manager' : 'Open Specialized Manager'}
           </button>
         </div>
       )}
@@ -250,7 +254,13 @@ export default function CategoryView() {
                   <>
                     <button
                       onClick={() => {
-                        if (hasCustomManager(activeCategory.slug) && activeCategory.slug !== 'gallery' && activeCategory.slug !== 'activities' && activeCategory.slug !== 'alumni' && activeCategory.slug !== 'facilities') {
+                        if (activeCategory.slug === 'student-project') {
+                          if (sec.content && sec.content.trim().startsWith('[')) {
+                            fetchStudentProjectsSection(sec);
+                          } else {
+                            handleEditSection(sec);
+                          }
+                        } else if (hasCustomManager(activeCategory.slug) && activeCategory.slug !== 'gallery' && activeCategory.slug !== 'activities' && activeCategory.slug !== 'alumni' && activeCategory.slug !== 'facilities') {
                           handleOpenSpecializedManager(activeCategory.slug);
                         } else if (activeCategory.slug === 'facilities') {
                           setActiveSection(sec);

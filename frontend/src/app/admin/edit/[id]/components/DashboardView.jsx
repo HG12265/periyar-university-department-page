@@ -24,6 +24,7 @@ export default function DashboardView() {
     { name: 'Facilities', slug: 'facilities', icon: '🏢', description: 'Departmental lab & research infrastructure' },
     { name: 'Energy & Environment Park', slug: 'energy-environment-park', icon: '🌲', description: 'Environmental park equipment & photos' },
     { name: 'UGC-MRP Projects', slug: 'ugc-mrp', icon: '🛡️', description: 'UGC Major/Minor Research Projects' },
+    { name: 'Gallery', slug: 'gallery', icon: '🖼️', description: 'Department photo gallery & student achievements' },
     { name: 'Best Practices', slug: 'best-practices', icon: '⭐', description: 'Departmental innovations & best practices' },
     { name: 'Student Projects', slug: 'student-project', icon: '📝', description: 'Student research & field projects' },
     { name: 'Finance Details', slug: 'finance-details', icon: '💵', description: 'Financial statements & fee details' },

@@ -259,6 +259,22 @@ export default function DeptPage() {
     navbarLinks.push({ label: 'Alumni', url: '#alumni', slug: 'alumni' });
   }
 
+  // Auto-inject Gallery tab if department has saved gallery events
+  const hasGalleryEvents = dept.activity_gallery && dept.activity_gallery.events && dept.activity_gallery.events.some(e => {
+    const cat = (e.category || '').trim().toLowerCase();
+    return cat !== 'activities';
+  });
+  if (hasGalleryEvents && !navbarLinks.some(l => l.slug === 'gallery')) {
+    navbarLinks.push({ label: 'Gallery', url: '#gallery', slug: 'gallery' });
+  }
+
+  // Auto-inject Activities tab if department has activities sections or activity events
+  const hasActivityEvents = (dept.activity_gallery && dept.activity_gallery.events && dept.activity_gallery.events.some(e => (e.category || '').trim().toLowerCase() === 'activities')) ||
+    (dept.sections && dept.sections.some(s => s.category === 'activities'));
+  if (hasActivityEvents && !navbarLinks.some(l => l.slug === 'activities')) {
+    navbarLinks.push({ label: 'Activities', url: '#activities', slug: 'activities' });
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-white font-sans">
       <Topbar />
@@ -384,9 +400,15 @@ export default function DeptPage() {
             )}
 
             {/* Activity Gallery Events - shown at the bottom of the activities tab only if not dynamically positioned */}
-            {activeTab === 'activities' && !dept.sections?.some(s => s.category === 'activities' && (s.content?.includes('[SPECIALIZED_ACTIVITIES_GALLERY]') || s.content?.startsWith('[SECTION_GALLERY]'))) && dept.activity_gallery && dept.activity_gallery.events && dept.activity_gallery.events.filter(evt => evt.category !== 'Programmes' && evt.category !== "Student's Achievements" && evt.category !== 'Facilities').length > 0 && (
+            {activeTab === 'activities' && !dept.sections?.some(s => s.category === 'activities' && (s.content?.includes('[SPECIALIZED_ACTIVITIES_GALLERY]') || s.content?.startsWith('[SECTION_GALLERY]'))) && dept.activity_gallery && dept.activity_gallery.events && dept.activity_gallery.events.filter(evt => {
+              const cat = (evt.category || '').trim().toLowerCase();
+              return cat === 'activities';
+            }).length > 0 && (
               <div className="space-y-10">
-                {dept.activity_gallery.events.filter(evt => evt.category !== 'Programmes' && evt.category !== "Student's Achievements" && evt.category !== 'Facilities').map((evt, idx) => {
+                {dept.activity_gallery.events.filter(evt => {
+                  const cat = (evt.category || '').trim().toLowerCase();
+                  return cat === 'activities';
+                }).map((evt, idx) => {
                   const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
                   const base = apiUrl.replace('/api', '');
                   return (
@@ -453,11 +475,17 @@ export default function DeptPage() {
                   </button>
                   {openAccordions.programmes && (
                     <div className="py-6 bg-white space-y-8 animate-in slide-in-from-top-2 duration-300">
-                      {dept.activity_gallery.events.filter(e => !e.category || e.category === 'Programmes').length === 0 ? (
+                      {dept.activity_gallery.events.filter(e => {
+                        const cat = (e.category || '').trim().toLowerCase();
+                        return cat !== 'activities' && !cat.includes('achievement') && (cat === '' || cat === 'programmes' || cat === 'gallery' || cat === 'department gallery' || cat === 'photo gallery');
+                      }).length === 0 ? (
                         <p className="text-gray-455 italic text-sm text-center py-6">No programmes gallery items available.</p>
                       ) : (
                         dept.activity_gallery.events
-                          .filter(e => !e.category || e.category === 'Programmes')
+                          .filter(e => {
+                            const cat = (e.category || '').trim().toLowerCase();
+                            return cat !== 'activities' && !cat.includes('achievement') && (cat === '' || cat === 'programmes' || cat === 'gallery' || cat === 'department gallery' || cat === 'photo gallery');
+                          })
                           .map((evt, idx) => {
 
 
@@ -511,11 +539,17 @@ export default function DeptPage() {
                   </button>
                   {openAccordions.achievements && (
                     <div className="py-6 bg-white space-y-8 animate-in slide-in-from-top-2 duration-300">
-                      {dept.activity_gallery.events.filter(e => e.category === "Student's Achievements").length === 0 ? (
+                      {dept.activity_gallery.events.filter(e => {
+                        const cat = (e.category || '').trim().toLowerCase();
+                        return cat !== 'activities' && (cat.includes('achievement') || cat === "student's achievements" || cat === 'student achievements');
+                      }).length === 0 ? (
                         <p className="text-gray-455 italic text-sm text-center py-6">No student achievements gallery items available.</p>
                       ) : (
                         dept.activity_gallery.events
-                          .filter(e => e.category === "Student's Achievements")
+                          .filter(e => {
+                            const cat = (e.category || '').trim().toLowerCase();
+                            return cat !== 'activities' && (cat.includes('achievement') || cat === "student's achievements" || cat === 'student achievements');
+                          })
                           .map((evt, idx) => {
                             const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
                             const base = apiUrl.replace('/api', '');
@@ -636,63 +670,91 @@ export default function DeptPage() {
             {/* Dedicated Student's Project Section */}
             {activeTab === 'student-project' && (
               <div className="space-y-8 font-sans">
-                {(() => {
-                  const section = dept.sections?.find(s => s.category === 'student-project');
-                  if (!section) return null;
+                {dept.sections
+                  ?.filter(s => s.category === 'student-project')
+                  ?.map((section, secIdx) => {
+                    let projects = null;
+                    if (section.content?.trim()?.startsWith('[')) {
+                      try {
+                        const parsed = JSON.parse(section.content);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                          projects = parsed;
+                        }
+                      } catch (e) {
+                        projects = null;
+                      }
+                    }
 
-                  let projects = [];
-                  try {
-                    projects = JSON.parse(section.content);
-                  } catch (e) {
-                    console.error("Error parsing student projects JSON:", e);
-                  }
+                    if (projects && projects.length > 0) {
+                      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+                      const base = apiUrl.replace('/api', '');
 
-                  if (!Array.isArray(projects) || projects.length === 0) {
-                    return null;
-                  }
+                      return (
+                        <div key={section.id || secIdx} className="space-y-6">
+                          {section.section_title && section.section_title.toLowerCase() !== 'student-project' && section.section_title.toLowerCase() !== "student's project" && (
+                            <h3 className="text-[#990033] text-[20px] font-bold mb-4 uppercase flex items-center gap-2">
+                              {section.section_title}
+                            </h3>
+                          )}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+                            {projects.map((proj, idx) => {
+                              const fullUrl = proj.image_url
+                                ? (proj.image_url.startsWith('/api/') ? `${base}${proj.image_url}` : proj.image_url)
+                                : '';
 
-                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-                  const base = apiUrl.replace('/api', '');
-
-                  return (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
-                      {projects.map((proj, idx) => {
-                        const fullUrl = proj.image_url
-                          ? (proj.image_url.startsWith('/api/') ? `${base}${proj.image_url}` : proj.image_url)
-                          : '';
-
-                        return (
-                          <div key={idx} className="flex flex-col items-center bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition duration-300">
-                            {/* Project Image */}
-                            <div className="w-full aspect-[4/3] bg-gray-50 border-b border-gray-100 relative flex items-center justify-center p-4">
-                              {fullUrl ? (
-                                <img
-                                  src={fullUrl}
-                                  alt={proj.title || "Student Project"}
-                                  className="w-full h-full object-contain"
-                                />
-                              ) : (
-                                <div className="text-gray-300 text-5xl">📄</div>
-                              )}
-                            </div>
-                            {/* Project Info */}
-                            <div className="p-6 flex-1 flex flex-col justify-between w-full text-center space-y-3">
-                              <h4 className="text-slate-800 text-[16px] md:text-[17px] font-bold line-clamp-3 min-h-[55px] leading-snug">
-                                {proj.title}
-                              </h4>
-                              <div className="space-y-1">
-                                <p className="text-slate-600 text-sm font-semibold">{proj.student}</p>
-                                <p className="text-emerald-700 text-xs font-bold uppercase tracking-wider">{proj.degree}</p>
-                              </div>
-                            </div>
-                            {/* Bottom Golden Border/Accent */}
-                            <div className="w-full h-1.5 bg-[#FFB81C]" />
+                              return (
+                                <div key={idx} className="flex flex-col items-center bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition duration-300">
+                                  {/* Project Image */}
+                                  <div className="w-full aspect-[4/3] bg-gray-50 border-b border-gray-100 relative flex items-center justify-center p-4">
+                                    {fullUrl ? (
+                                      <img
+                                        src={fullUrl}
+                                        alt={proj.title || "Student Project"}
+                                        className="w-full h-full object-contain"
+                                      />
+                                    ) : (
+                                      <div className="text-gray-300 text-5xl">📄</div>
+                                    )}
+                                  </div>
+                                  {/* Project Info */}
+                                  <div className="p-6 flex-1 flex flex-col justify-between w-full text-center space-y-3">
+                                    <h4 className="text-slate-800 text-[16px] md:text-[17px] font-bold line-clamp-3 min-h-[55px] leading-snug">
+                                      {proj.title}
+                                    </h4>
+                                    <div className="space-y-1">
+                                      <p className="text-slate-600 text-sm font-semibold">{proj.student}</p>
+                                      <p className="text-emerald-700 text-xs font-bold uppercase tracking-wider">{proj.degree}</p>
+                                    </div>
+                                  </div>
+                                  {/* Bottom Golden Border/Accent */}
+                                  <div className="w-full h-1.5 bg-[#FFB81C]" />
+                                </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
+                        </div>
+                      );
+                    }
+
+                    const hasHeading = section.content && /<h[1-6]\b[^>]*>/i.test(section.content);
+
+                    return (
+                      <div key={section.id || secIdx} className="animate-in fade-in slide-in-from-top-2 duration-500 mb-8">
+                        {section.section_title && !hasHeading && section.section_title.toLowerCase() !== 'student-project' && (
+                          <h3 className="text-[#990033] text-[20px] font-bold mb-4 uppercase flex items-center gap-2">
+                            {section.section_title}
+                          </h3>
+                        )}
+                        <div
+                          className="text-[15px] md:text-[16px] text-[#444] leading-[1.8] prose max-w-none w-full whitespace-normal break-words overflow-x-auto scrollbar-hide 
+                            prose-headings:text-[#7a0000] prose-a:text-[#d9534f] prose-a:font-bold 
+                            prose-table:w-full prose-table:my-6
+                            prose-table:border-collapse prose-td:p-3 prose-th:p-3"
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content || '') }}
+                        />
+                      </div>
+                    );
+                  })}
               </div>
             )}
 
@@ -966,7 +1028,10 @@ export default function DeptPage() {
 
                 if (section.content?.includes('[SPECIALIZED_ACTIVITIES_GALLERY]')) {
                   const htmlContent = section.content.replace('[SPECIALIZED_ACTIVITIES_GALLERY]', '').trim();
-                  const filteredEvents = dept.activity_gallery?.events?.filter(evt => evt.category !== 'Programmes' && evt.category !== "Student's Achievements" && evt.category !== 'Facilities') || [];
+                  const filteredEvents = dept.activity_gallery?.events?.filter(evt => {
+                    const cat = (evt.category || '').trim().toLowerCase();
+                    return cat === 'activities';
+                  }) || [];
                   if (filteredEvents.length === 0 && !htmlContent) {
                     return null;
                   }

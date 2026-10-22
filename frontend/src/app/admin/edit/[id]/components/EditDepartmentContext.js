@@ -708,6 +708,7 @@ export function EditDepartmentProvider({ children }) {
     { name: 'Journal', icon: '📰', slug: 'journal' },
     { name: 'Alumni', icon: '🤝', slug: 'alumni' },
     { name: 'Contact', icon: '📞', slug: 'contact' },
+    { name: 'Gallery', icon: '🖼️', slug: 'gallery' },
   ];
 
   let categories = dept?.nav_links && dept.nav_links.length > 0
@@ -802,8 +803,8 @@ export function EditDepartmentProvider({ children }) {
     }
   };
 
-  const fetchStudentProjectsSection = () => {
-    const sect = dept?.sections?.find(s => s.category === 'student-project');
+  const fetchStudentProjectsSection = (targetSec = null) => {
+    const sect = targetSec || dept?.sections?.find(s => s.category === 'student-project' && s.content?.trim()?.startsWith('[')) || dept?.sections?.find(s => s.category === 'student-project');
     if (sect) {
       setActiveSection(sect);
       try {
@@ -2512,7 +2513,7 @@ export function EditDepartmentProvider({ children }) {
         setFinanceDetailsContent([]);
       }
       setView('finance-details-manager');
-    } else if (slug === 'gallery') {
+    } else if (slug === 'gallery' || slug === 'activities') {
       fetchActivityGallery();
       setView('gallery-manager');
     } else if (slug === 'energy-environment-park') {
