@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import cron from 'node-cron';
 import { FacultyRepository } from '../repositories/facultyRepository';
+import { DepartmentRepository } from '../repositories/departmentRepository';
 import { LegacyRepository } from '../repositories/legacyRepository';
 import { ResumeRepository, ResumeMaster } from '../repositories/resumeRepository';
 import { ApiError } from '../utils/ApiError';
@@ -26,7 +27,14 @@ export class ResumeService {
       throw new ApiError(404, 'Faculty record not found');
     }
 
-    const deptName = faculty.department_name || '';
+    let deptName = (faculty.department_name || '').trim();
+    if (!deptName && faculty.dept_id) {
+      const dept = await DepartmentRepository.findById(faculty.dept_id);
+      if (dept) {
+        deptName = (dept.name || '').trim();
+      }
+    }
+    deptName = deptName.replace(/^Department of\s+/i, '').trim();
     let empId = faculty.emp_id;
 
     // Resolve email lookup in legacy DB if emp_id is missing
@@ -349,8 +357,9 @@ export class ResumeService {
     }
 
     // Compile Summary Paragraph
+    const deptPhrase = deptName ? `Department of ${deptName}` : 'Academic Departments';
     const summaryParts: string[] = [
-      `${faculty.name} is a ${faculty.designation || 'Faculty Member'} in the Department of ${deptName || 'Academic studies'} at Periyar University.`,
+      `${faculty.name} is a ${faculty.designation || 'Faculty Member'} in the ${deptPhrase} at Periyar University.`,
     ];
     if (researchAreas.length > 0) {
       summaryParts.push(`Primary research areas and interests include ${researchAreas.slice(0, 3).join(', ')}.`);

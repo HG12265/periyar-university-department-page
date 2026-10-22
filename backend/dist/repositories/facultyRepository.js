@@ -5,19 +5,28 @@ const db_1 = require("../db");
 class FacultyRepository {
     // Get faculties in a department
     static async getByDept(deptId) {
-        const [rows] = await db_1.primaryDB.query('SELECT id, dept_id, emp_id, name, designation, email, specialization, image_url, profile_url, is_former, order_index FROM faculties WHERE dept_id = ? ORDER BY order_index ASC', [deptId]);
+        const [rows] = await db_1.primaryDB.query('SELECT f.id, f.dept_id, f.emp_id, f.name, f.designation, f.email, f.specialization, f.image_url, f.profile_url, f.is_former, f.order_index, d.name AS department_name ' +
+            'FROM faculties f ' +
+            'LEFT JOIN departments d ON f.dept_id = d.id ' +
+            'WHERE f.dept_id = ? ORDER BY f.order_index ASC', [deptId]);
         return rows;
     }
     // Find faculty by ID
     static async findById(id) {
-        const [rows] = await db_1.primaryDB.query('SELECT id, dept_id, emp_id, name, designation, email, specialization, image_url, profile_url, is_former, order_index FROM faculties WHERE id = ? LIMIT 1', [id]);
+        const [rows] = await db_1.primaryDB.query('SELECT f.id, f.dept_id, f.emp_id, f.name, f.designation, f.email, f.specialization, f.image_url, f.profile_url, f.is_former, f.order_index, d.name AS department_name ' +
+            'FROM faculties f ' +
+            'LEFT JOIN departments d ON f.dept_id = d.id ' +
+            'WHERE f.id = ? LIMIT 1', [id]);
         if (rows.length === 0)
             return null;
         return rows[0];
     }
     // Find faculty by emp_id
     static async findByEmpId(empId) {
-        const [rows] = await db_1.primaryDB.query('SELECT id, dept_id, emp_id, name, designation, email, specialization, image_url, profile_url, is_former, order_index FROM faculties WHERE emp_id = ? LIMIT 1', [empId]);
+        const [rows] = await db_1.primaryDB.query('SELECT f.id, f.dept_id, f.emp_id, f.name, f.designation, f.email, f.specialization, f.image_url, f.profile_url, f.is_former, f.order_index, d.name AS department_name ' +
+            'FROM faculties f ' +
+            'LEFT JOIN departments d ON f.dept_id = d.id ' +
+            'WHERE f.emp_id = ? LIMIT 1', [empId]);
         if (rows.length === 0)
             return null;
         return rows[0];

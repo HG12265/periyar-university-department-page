@@ -8,6 +8,7 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const node_cron_1 = __importDefault(require("node-cron"));
 const facultyRepository_1 = require("../repositories/facultyRepository");
+const departmentRepository_1 = require("../repositories/departmentRepository");
 const legacyRepository_1 = require("../repositories/legacyRepository");
 const resumeRepository_1 = require("../repositories/resumeRepository");
 const ApiError_1 = require("../utils/ApiError");
@@ -28,7 +29,14 @@ class ResumeService {
         if (!faculty) {
             throw new ApiError_1.ApiError(404, 'Faculty record not found');
         }
-        const deptName = faculty.department_name || '';
+        let deptName = (faculty.department_name || '').trim();
+        if (!deptName && faculty.dept_id) {
+            const dept = await departmentRepository_1.DepartmentRepository.findById(faculty.dept_id);
+            if (dept) {
+                deptName = (dept.name || '').trim();
+            }
+        }
+        deptName = deptName.replace(/^Department of\s+/i, '').trim();
         let empId = faculty.emp_id;
         // Resolve email lookup in legacy DB if emp_id is missing
         if (!empId && faculty.email) {
@@ -331,8 +339,9 @@ class ResumeService {
             skills = ['Research', 'Teaching', 'Curriculum Development', 'Academic Mentoring'];
         }
         // Compile Summary Paragraph
+        const deptPhrase = deptName ? `Department of ${deptName}` : 'Academic Departments';
         const summaryParts = [
-            `${faculty.name} is a ${faculty.designation || 'Faculty Member'} in the Department of ${deptName || 'Academic studies'} at Periyar University.`,
+            `${faculty.name} is a ${faculty.designation || 'Faculty Member'} in the ${deptPhrase} at Periyar University.`,
         ];
         if (researchAreas.length > 0) {
             summaryParts.push(`Primary research areas and interests include ${researchAreas.slice(0, 3).join(', ')}.`);

@@ -268,7 +268,12 @@ function FacultyProfileModalContent({ faculty, onClose, initialTab = 'profile' }
                   )}
                   <div className="border-b border-slate-50 pb-2.5">
                     <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department</span>
-                    <strong className="text-slate-800 font-semibold">{resumeData.generated_resume_json.personal.department}</strong>
+                    <strong className="text-slate-800 font-semibold">
+                      {(() => {
+                        const d = (resumeData.generated_resume_json.personal.department !== 'N/A' && resumeData.generated_resume_json.personal.department) || faculty.department_name || faculty.department || '';
+                        return d ? d.replace(/^Department of\s+/i, '') : 'N/A';
+                      })()}
+                    </strong>
                   </div>
                   <div className="border-b border-slate-50 pb-2.5">
                     <span className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider">Designation</span>
@@ -670,7 +675,12 @@ function FacultyProfileModalContent({ faculty, onClose, initialTab = 'profile' }
                       {resumeData.generated_resume_json.personal.designation}
                     </p>
                     <p className="text-xs font-sans text-slate-600 m-0">
-                      Department of {resumeData.generated_resume_json.personal.department}
+                      {(() => {
+                        const rawDept = (resumeData.generated_resume_json.personal.department !== 'N/A' && resumeData.generated_resume_json.personal.department) || faculty.department_name || faculty.department || '';
+                        if (!rawDept) return 'Periyar University';
+                        const clean = rawDept.replace(/^Department of\s+/i, '').trim();
+                        return clean ? `Department of ${clean}` : 'Periyar University';
+                      })()}
                     </p>
                     <p className="text-xs font-sans text-slate-600 m-0">
                       Periyar University, Salem, Tamil Nadu, India
@@ -695,7 +705,14 @@ function FacultyProfileModalContent({ faculty, onClose, initialTab = 'profile' }
                 {resumeData.generated_resume_json.summary && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-bold font-sans text-[#000066] tracking-wider uppercase m-0">Professional Summary</h3>
-                    <p className="text-xs leading-relaxed text-slate-700 m-0">{resumeData.generated_resume_json.summary}</p>
+                    <p className="text-xs leading-relaxed text-slate-700 m-0">
+                      {(() => {
+                        const rawDept = (resumeData.generated_resume_json.personal.department !== 'N/A' && resumeData.generated_resume_json.personal.department) || faculty.department_name || faculty.department || '';
+                        const clean = rawDept ? rawDept.replace(/^Department of\s+/i, '').trim() : '';
+                        const replacement = clean ? `Department of ${clean}` : 'Periyar University';
+                        return resumeData.generated_resume_json.summary.replace(/Department of Academic studies/gi, replacement);
+                      })()}
+                    </p>
                   </div>
                 )}
 
